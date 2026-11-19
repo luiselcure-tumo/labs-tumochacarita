@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar vacante · Learning Labs TUMO Chacarita</title>
+    <meta name="description" content="Formulario de solicitud de vacante para los Learning Labs de diciembre en TUMO Chacarita.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+</head>
+<body class="page-form">
+
+    <!-- NAVEGACIÓN -->
+    <header class="nav">
+        <a href="index.html" class="nav__logo" aria-label="TUMO Chacarita — volver al inicio">
+            <img class="logo-img logo-img--dark" src="assets/TUMO_BuenosAires_Chacarita_Logo_Dark.png" alt="TUMO Chacarita">
+            <img class="logo-img logo-img--light" src="assets/Chacarita_Logo_Light.png" alt="TUMO Chacarita">
+        </a>
+        <div class="nav__actions">
+            <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Cambiar a fondo verde Chacarita">
+                <span class="theme-toggle__dot"></span>
+            </button>
+            <a href="index.html#actividades" class="btn btn--ghost btn--sm">← Cartelera</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- ENCABEZADO DE PÁGINA -->
+        <section class="form-hero">
+            <p class="kicker">Learning Labs · Diciembre 2026</p>
+            <h1>Solicit<span class="hand hand--dark">á</span> tu vacante</h1>
+        </section>
+
+        <!-- VISTAS DE ESTADO: CARGANDO Y MENSAJES -->
+        <section class="signup__block" data-view="loading" style="max-width: 640px; margin: 0 auto; text-align: center;">
+            <p data-loading-text>Cargando información del taller…</p>
+        </section>
+
+        <section class="signup__block" data-view="message" hidden style="max-width: 640px; margin: 0 auto; text-align: center;">
+            <p class="signup__msg" data-message style="font-size: 1.1rem; margin-bottom: 1.5rem;"></p>
+            <div data-message-actions style="display: flex; justify-content: center; gap: 1rem;">
+                <a href="index.html#actividades" class="btn btn--green">Ver la cartelera</a>
+            </div>
+        </section>
+
+        <!-- FORMULARIO NATIVO DE INSCRIPCIÓN -->
+        <form class="signup" data-view="form" data-signup novalidate hidden>
+
+            <!-- BLOQUE 1: RESUMEN DEL TALLER ELEGIDO -->
+            <section class="signup__block chosen" data-chosen>
+                <div class="chosen__head">
+                    <p class="chosen__label">Estás solicitando vacante en</p>
+                    <a href="index.html#actividades" class="chosen__change">Cambiar taller</a>
+                </div>
+                <h2 data-chosen-name></h2>
+                <div class="chosen__pills">
+                    <span class="tag" data-chosen-disciplina></span>
+                    <span class="tag" data-chosen-duracion></span>
+                    <span class="tag" data-chosen-cupos></span>
+                </div>
+
+                <!-- ALERTA SI EL TALLER ESTÁ LLENO (NO DISPONIBLE) -->
+                <div class="alert-full" data-chosen-full hidden>
+                    ⚠️ Este taller ya alcanzó el cupo máximo de participantes y <strong>no está disponible</strong>. No es posible enviar nuevas solicitudes.
+                </div>
+
+                <div class="field" style="margin-top: 1rem;">
+                    <span>Horario seleccionado</span>
+                    <div class="field" style="font-weight: 700; color: var(--green-dark); background: #f0f8ef; padding: 0.8rem 1.2rem; border-radius: 12px;" data-chosen-horario></div>
+                </div>
+
+                <div style="margin-top: 1rem; font-size: 0.95rem;">
+                    <span class="info__label">Requisitos</span>
+                    <div data-chosen-requisito style="font-weight: 600;"></div>
+                </div>
+            </section>
+
+            <!-- BLOQUE 2: DATOS DEL ESTUDIANTE -->
+            <fieldset class="signup__block">
+                <legend><span class="signup__num">1</span> Datos del estudiante</legend>
+                <div class="fields">
+                    <label class="field" data-field="nombre">
+                        <span>Nombre y apellido del estudiante *</span>
+                        <input name="nombre" required autocomplete="name" placeholder="Ej.: Martina Gómez">
+                        <span class="field__hint" data-hint="nombre"></span>
+                    </label>
+
+                    <label class="field" data-field="dni">
+                        <span>DNI del estudiante *</span>
+                        <input name="dni" required inputmode="numeric" maxlength="12" autocomplete="off" placeholder="Sin puntos ni espacios (Ej.: 45123456)">
+                        <span class="field__hint" data-hint="dni">Ingresá el documento de quien va a participar.</span>
+                    </label>
+
+                    <label class="field" data-field="correo">
+                        <span>Correo electrónico (de TUMO) *</span>
+                        <input name="correo" type="email" required autocomplete="email" placeholder="estudiante@tumo.ar">
+                        <span class="field__hint" data-hint="correo">Ingresá tu correo institucional @tumo.ar o el mail registrado en TUMO.</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- BLOQUE 3: CASILLERO DE RECONFIRMACIÓN DE HORARIO -->
+            <fieldset class="signup__block">
+                <legend><span class="signup__num">2</span> Reconfirmación</legend>
+                <label class="check" data-field="confirmo">
+                    <input type="checkbox" name="confirmo" required>
+                    <span data-confirm-text>Confirmo que quiero solicitar una vacante en este taller y que puedo asistir en el horario seleccionado.</span>
+                </label>
+                <span class="field__hint" data-hint="confirmo" style="color: #c62828; display: block; margin-top: 0.5rem;"></span>
+            </fieldset>
+
+            <!-- BOTÓN DE ENVÍO -->
+            <div class="signup__submit">
+                <button type="submit" class="btn btn--green btn--lg" data-submit>Enviar solicitud</button>
+                <p class="signup__msg" data-form-msg aria-live="polite"></p>
+            </div>
+        </form>
+
+        <!-- VISTA DE ÉXITO (CONFIRMACIÓN DE ENVÍO) -->
+        <section class="signup-done" data-view="done" hidden>
+            <span class="signup-done__icon">✓</span>
+            <h2>¡Recibimos tu solicitud!</h2>
+            <p>
+                Tu solicitud de vacante para <strong data-done-taller></strong> fue enviada exitosamente al equipo de TUMO Chacarita.
+            </p>
+            <div class="signup__block" style="text-align: left; margin: 1.5rem auto; max-width: 440px; background: #f8faf8;">
+                <p style="margin-bottom: 0.5rem;"><strong>Estudiante:</strong> <span data-done-nombre></span></p>
+                <p style="margin-bottom: 0.5rem;"><strong>DNI:</strong> <span data-done-dni></span></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Correo:</strong> <span data-done-correo></span></p>
+                <p style="margin-bottom: 0;"><strong>Horario confirmado:</strong> <span data-done-horario></span></p>
+            </div>
+            <p style="font-size: 0.95rem; color: var(--muted); margin-bottom: 2rem;">
+                Te enviaremos la confirmación definitiva por correo electrónico a tu casilla de TUMO antes del inicio del taller.
+            </p>
+            <a href="index.html#actividades" class="btn btn--green btn--lg">Volver a la cartelera</a>
+        </section>
+
+    </main>
+
+    <!-- POP CARD NATIVO (<dialog>) PARA CONFIRMAR HORARIO O VOLVER A LA CARTELERA -->
+    <dialog class="confirm" data-confirm aria-labelledby="confirm-title">
+        <p class="kicker">Confirmá tu elección</p>
+        <h2 id="confirm-title" style="margin-bottom: 1rem;">¿Querés solicitar vacante en <span data-confirm-name style="color: var(--green-dark);"></span>?</h2>
+        
+        <div class="alert-full" data-confirm-full hidden>
+            ⚠️ <strong>Taller no disponible:</strong> Este taller ya ha alcanzado el límite de participantes máximos.
+        </div>
+
+        <div style="margin: 1.2rem 0; text-align: left;">
+            <p class="info__label" id="confirm-times-label">Elegí o confirmá tu horario:</p>
+            <div class="confirm__times" data-confirm-times role="radiogroup" aria-labelledby="confirm-times-label">
+                <!-- Se inyectan las opciones de horario dinámicamente -->
+            </div>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1.5rem;">
+            Recordá que cada estudiante puede solicitar vacante en <strong>un solo taller</strong> de diciembre.
+        </p>
+
+        <div class="confirm__actions">
+            <button type="button" class="btn btn--green" data-confirm-yes disabled>Sí, continuar</button>
+            <a href="index.html#actividades" class="btn btn--ghost">Volver a la cartelera</a>
+        </div>
+    </dialog>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer__logo">
+            <img class="logo-img logo-img--dark" src="assets/TUMO_BuenosAires_Chacarita_Logo_Dark.png" alt="TUMO Chacarita">
+            <img class="logo-img logo-img--light" src="assets/Chacarita_Logo_Light.png" alt="TUMO Chacarita">
+        </div>
+        <p>Centro de tecnologías creativas para adolescentes.</p>
+        <p class="footer__small">© 2026 TUMO Chacarita · Buenos Aires</p>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="config.js"></script>
+    <script src="data_de_labs.js"></script>
+    <script src="form.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html>

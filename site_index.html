@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Labs Diciembre 2026 · TUMO Chacarita</title>
+    <meta name="description" content="Learning Labs de diciembre en TUMO Chacarita: talleres cortos de tecnología y creatividad para adolescentes. Elegí tu propuesta y solicitá tu vacante.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+    <!-- NAVEGACIÓN -->
+    <header class="nav">
+        <a href="#top" class="nav__logo" aria-label="TUMO Chacarita">
+            <img class="logo-img logo-img--dark" src="assets/TUMO_BuenosAires_Chacarita_Logo_Dark.png" alt="TUMO Chacarita">
+            <img class="logo-img logo-img--light" src="assets/Chacarita_Logo_Light.png" alt="TUMO Chacarita">
+        </a>
+        <nav class="nav__links" aria-label="Secciones">
+            <a href="#que-es">Qué es</a>
+            <a href="#actividades">Cartelera</a>
+            <a href="#faq">Preguntas frecuentes</a>
+        </nav>
+        <div class="nav__actions">
+            <!-- Conmutador de Tema: Fondo claro ↔ Fondo Verde Chacarita -->
+            <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Cambiar a fondo verde Chacarita">
+                <span class="theme-toggle__dot"></span>
+            </button>
+            <a href="#actividades" class="btn btn--green btn--sm">Inscribite</a>
+        </div>
+    </header>
+
+    <main id="top">
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero__text">
+                <p class="tag">Diciembre 2026 · Exclusivo para estudiantes de TUMO Chacarita</p>
+                <h1 class="hero__title">
+                    <img class="hero__logo" src="assets/che_verano.png" alt="Che Diciembre · TUMO Chacarita">
+                    <span class="hero__name">Learning Labs</span>
+                </h1>
+                <p class="hero__lead">
+                    Talleres cortos e intensivos para crear, probar y construir proyectos reales junto al equipo de TUMO Chacarita.
+                    Elegí una propuesta de la cartelera y solicitá tu vacante.
+                </p>
+                <div class="hero__actions">
+                    <a href="#actividades" class="btn btn--green btn--lg">Ver la cartelera</a>
+                    <a href="#faq" class="btn btn--ghost btn--lg">Consultar estado</a>
+                </div>
+            </div>
+
+            <!-- Vista destacada en el Hero -->
+            <div class="hero__art">
+                <div class="hero__card-preview">
+                    <div class="hero__preview-art">
+                        <div class="art-genai">
+                            <span class="art-genai__sparkle">✦</span>
+                            <div class="art-genai__nodes">
+                                <span class="art-genai__node"></span>
+                                <span class="art-genai__node"></span>
+                                <span class="art-genai__node"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="hero__preview-title">33 Propuestas Creativas</h3>
+                    <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem;">
+                        Fotografía, Música, Cine, IA Generativa, 3D, Videojuegos, Programación y Dibujo.
+                    </p>
+                    <div class="hero__preview-pills">
+                        <span class="state state--disponible">Inscripción Online</span>
+                        <span class="tag" style="margin: 0;">100% Gratuito</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUÉ ES UN LEARNING LAB -->
+        <section class="section section--light" id="que-es">
+            <div class="split">
+                <div>
+                    <p class="kicker">¿Qué es un Learning Lab?</p>
+                    <h2>Aprender haciendo,<br>en talleres <span class="nowrap"><span class="hand hand--dark">i</span>ntensivos.</span></h2>
+                </div>
+                <div class="split__body">
+                    <p>
+                        Los Learning Labs son experiencias prácticas y focalizadas donde trabajás en un proyecto concreto,
+                        guiado por el equipo de TUMO Chacarita. Siguiendo el espíritu del TUMO Path, el proceso está centrado en vos:
+                        diseñás, testeás, iterás y presentás tus creaciones.
+                    </p>
+                    <ul class="checklist">
+                        <li>Exclusivo para estudiantes activos de TUMO Chacarita</li>
+                        <li>Vacantes limitadas por cupo máximo en cada taller</li>
+                        <li><strong>Una sola actividad por estudiante</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARTELERA DE ACTIVIDADES -->
+        <section class="section" id="actividades">
+            <div class="cartelera-header">
+                <p class="kicker">Cartelera Diciembre 2026</p>
+                <h2>Elegí tu <span class="hand hand--dark">p</span>ropuesta</h2>
+                <p class="section__lead">
+                    Explorá los talleres disponibles por disciplina. Tocá cualquier tarjeta para conocer los detalles y solicitar tu lugar.
+                </p>
+            </div>
+
+            <!-- Filtros interactivos por disciplina -->
+            <div class="filters-wrapper">
+                <div class="filters" data-filters></div>
+            </div>
+
+            <!-- Leyenda de Estados de Disponibilidad -->
+            <ul class="legend" aria-label="Estados de vacantes">
+                <li><span class="state state--disponible">Disponible</span></li>
+                <li><span class="state state--no-disponible">No disponible (Cupo lleno)</span></li>
+            </ul>
+
+            <!-- Contenedor dinámico de tarjetas -->
+            <div class="cards" data-lab-cards aria-busy="true">
+                <p class="cartelera-msg">Cargando propuestas de talleres…</p>
+            </div>
+        </section>
+
+        <!-- BANNER CTA -->
+        <section class="cta" id="inscripcion">
+            <h2>Asegurá tu lugar en TUMO Chacarita</h2>
+            <p>Cada taller tiene un límite de participantes máximos. Elegí tu actividad favorita en la cartelera antes de que se completen las vacantes.</p>
+            <a href="#actividades" class="btn btn--light btn--lg">Explorar la cartelera</a>
+        </section>
+
+        <!-- PREGUNTAS FRECUENTES -->
+        <section class="section" id="faq">
+            <div class="cartelera-header" style="text-align: left; margin: 0 0 2rem;">
+                <p class="kicker">Preguntas frecuentes</p>
+                <h2>Todo lo que necesitás saber</h2>
+            </div>
+            
+            <div class="faq">
+                <!-- Consultar estado de solicitud -->
+                <details class="faq__status" id="estado">
+                    <summary>¿Cuál es el estado de mi solicitud de vacante?</summary>
+                    <div class="status">
+                        <p>Ingresá tu DNI o el documento con el que te inscribiste para consultar el estado de tu vacante:</p>
+                        <form class="status__form" data-status-form>
+                            <label class="sr-only" for="status-dni">DNI o documento</label>
+                            <input id="status-dni" required autocapitalize="characters" placeholder="DNI del estudiante">
+                            <button type="submit" class="btn btn--green">Consultar</button>
+                        </form>
+                        <p class="status__result" data-status-result aria-live="polite"></p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>¿Quiénes pueden participar de los Learning Labs?</summary>
+                    <p>Las actividades de diciembre son exclusivas para estudiantes activos de TUMO Chacarita.</p>
+                </details>
+
+                <details>
+                    <summary>¿Qué datos se solicitan para la inscripción?</summary>
+                    <p>Se solicita nombre y apellido del estudiante, su número de DNI y su <strong>correo electrónico de TUMO (@tumo.ar)</strong>.</p>
+                </details>
+
+                <details>
+                    <summary>¿Puedo inscribirme en más de un taller?</summary>
+                    <p>No. Para garantizar que todos los chicos tengan oportunidad de participar, cada estudiante puede solicitar vacante en un solo taller.</p>
+                </details>
+
+                <details>
+                    <summary>¿Qué sucede cuando un taller figura como "No disponible"?</summary>
+                    <p>Significa que se ha completado el número máximo de participantes permitidos para ese taller. Te sugerimos volver a la cartelera y seleccionar otra de las propuestas con vacantes disponibles.</p>
+                </details>
+
+                <details>
+                    <summary>¿Los talleres son gratuitos?</summary>
+                    <p>Sí, absolutamente todos los talleres de TUMO Chacarita son 100% gratuitos.</p>
+                </details>
+
+                <details>
+                    <summary>¿Cómo me entero de la confirmación final de mi vacante?</summary>
+                    <p>Una vez enviada la solicitud, el equipo de TUMO Chacarita enviará la confirmación definitiva por correo electrónico a la casilla registrada antes de la fecha de inicio del lab.</p>
+                </details>
+
+                <details>
+                    <summary>¿Cómo contacto a la sede si tengo dudas?</summary>
+                    <p>Podés escribirnos a <a href="mailto:chacarita@tumo.ar" style="color: var(--green-primary); font-weight: 700;">chacarita@tumo.ar</a> o consultarle a nuestro asistente virtual Flashy en la esquina inferior derecha.</p>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL NATIVO DE DETALLE DE TALLER (<dialog>) -->
+    <dialog class="lab-panel" data-lab-panel aria-labelledby="lab-panel-title">
+        <button class="lab-panel__close" data-lab-close aria-label="Cerrar modal">✕</button>
+        <div class="card__media" data-lab-media style="height: 190px; margin-top: 0.5rem;"></div>
+        <div class="lab-panel__body">
+            <p class="kicker" data-lab-kicker></p>
+            <h2 id="lab-panel-title" data-lab-title></h2>
+            <div data-lab-state></div>
+            <p class="lab-panel__intro" data-lab-intro style="color: var(--muted); line-height: 1.6;"></p>
+            
+            <div class="lab-panel__facts">
+                <div>
+                    <span class="info__label">Horarios sugeridos</span>
+                    <div class="info__value" data-lab-sched></div>
+                </div>
+                <div>
+                    <span class="info__label">Participantes</span>
+                    <div class="info__value" data-lab-capacidad></div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <span class="info__label">Requisitos previos</span>
+                    <div class="info__value" data-lab-requisito></div>
+                </div>
+            </div>
+
+            <a href="inscripcion.html" class="btn btn--green btn--lg" data-lab-signup style="width: 100%; margin-top: 0.5rem;">
+                Solicitar vacante
+            </a>
+        </div>
+    </dialog>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer__logo">
+            <img class="logo-img logo-img--dark" src="assets/TUMO_BuenosAires_Chacarita_Logo_Dark.png" alt="TUMO Chacarita">
+            <img class="logo-img logo-img--light" src="assets/Chacarita_Logo_Light.png" alt="TUMO Chacarita">
+        </div>
+        <p>Centro de tecnologías creativas para adolescentes.</p>
+        <p class="footer__small">© 2026 TUMO Chacarita · Buenos Aires</p>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="config.js"></script>
+    <script src="data_de_labs.js"></script>
+    <script src="script.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html>
