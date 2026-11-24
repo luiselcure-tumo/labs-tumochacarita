@@ -1,5 +1,5 @@
 // ==========================================================
-// TUMO Chacarita Learning Labs — Diciembre 2026
+// TUMO Chacarita Flash Labs — Diciembre 2026
 // Configuración general, disciplinas, constantes y helpers
 // ==========================================================
 
@@ -8,42 +8,43 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOYv4Yk4k4W7B0DNf1uAFWRW-KgRyNSzjQxD_griUpduSaP3hJ441jjPCVWt2gKiLndg/exec"; 
 
 const EVENT = {
-    name: "Learning Labs Diciembre 2026",
+    name: "Flash Labs Diciembre 2026",
     center: "TUMO Chacarita",
     city: "Buenos Aires",
     dates: "Diciembre de 2026",
     period: "Del 10 al 18 de diciembre de 2026",
     place: "TUMO Chacarita",
     price: "Gratuito",
-    contact: "chacarita@tumo.ar",
+    contact: "familias.chacarita@tumo.ar",
     whatsapp: "5491151342592",
-    whatsappText: "Hola, necesito más información sobre los Learning Labs de TUMO Chacarita",
-    emailDomain: "@tumo.ar",
+    whatsappText: "Hola, necesito más información sobre los Flash Labs de TUMO Chacarita",
+    emailDomain: "@tumo.world",
+    maxInscripcionesPorEstudiante: 2,
     rules: [
         "Exclusivo para estudiantes de TUMO Chacarita.",
-        "Cada estudiante puede solicitar vacante en un solo Learning Lab de diciembre.",
-        "Se requiere completar Nombre y apellido, DNI y correo electrónico de TUMO (@tumo.ar).",
+        "Cada estudiante puede inscribirse en hasta dos (2) Flash Labs distintos de diciembre.",
+        "Se requiere completar Nombre y apellido, DNI y correo electrónico de TUMO (@tumo.world).",
         "Cada taller tiene un cupo limitado (Participantes Máximos). Una vez alcanzado, se marca como 'No disponible'.",
         "La confirmación de la vacante se notifica por correo electrónico oficial de TUMO.",
         "Todas las actividades y talleres son 100% gratuitos."
     ],
     faq: [
-        ["¿Cuándo se dictan los Learning Labs?", 
-         "Los Learning Labs se desarrollarán durante diciembre de 2026 en la sede de TUMO Chacarita."],
+        ["¿Cuándo y dónde se dictan los Flash Labs?", 
+         "Los Flash Labs se desarrollarán del 10 al 18 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires."],
         ["¿Quiénes pueden participar?", 
-         "Son actividades exclusivas para estudiantes activos de TUMO Chacarita."],
+         "Son actividades exclusivas para estudiantes activos de TUMO Chacarita que tengan al menos una disciplina en estado \"complete\" u \"on going\"."],
+        ["¿Me puedo anotar en más de un Flash Lab?", 
+         "Sí, podés inscribirte en hasta dos (2) Flash Labs distintos, siempre que no repitas el mismo taller."],
         ["¿Qué datos me piden para inscribirme?", 
-         "Tu nombre y apellido, DNI y tu correo electrónico de TUMO (o institucional)."],
-        ["¿Me puedo anotar en más de un taller?", 
-         "No. Para que todos los estudiantes tengan oportunidad de participar, cada estudiante puede solicitar vacante en un solo taller."],
+         "Tu nombre y apellido, DNI y tu correo electrónico de TUMO (@tumo.world)."],
         ["¿Qué pasa si un taller dice 'No disponible'?", 
-         "Significa que el taller alcanzó el número máximo de participantes permitidos. En ese caso te recomendamos elegir otra de las opciones disponibles en la cartelera."],
+         "Significa que el taller alcanzó el número máximo de participantes. Te recomendamos elegir otra de las opciones disponibles en la cartelera."],
         ["¿Tienen costo los talleres?", 
-         "Ninguno. Todos los Learning Labs de TUMO Chacarita son totalmente gratuitos."],
+         "Ninguno. Todos los Flash Labs de TUMO Chacarita son totalmente gratuitos."],
         ["¿Cómo sé si mi vacante está confirmada?", 
          "El equipo de TUMO Chacarita enviará la confirmación por correo electrónico antes del inicio del taller."],
         ["¿Cómo contacto a la sede?", 
-         "Podés escribirnos a chacarita@tumo.ar o por WhatsApp al +54 9 11 5134-2592."]
+         "Podés escribirnos a familias.chacarita@tumo.ar o por WhatsApp al +54 9 11 5134-2592."]
     ]
 };
 
@@ -166,7 +167,7 @@ const USERS_ICON = '<svg class="icon-users" width="18" height="18" viewBox="0 0 
 // ==========================================================
 // Gestión de Almacenamiento Local y Conteos de Inscripciones
 // ==========================================================
-const STORAGE_KEY = "tumo_chacarita_learning_labs_inscripciones";
+const STORAGE_KEY = "tumo_chacarita_flash_labs_inscripciones";
 
 function getLocalInscripciones() {
     try {
@@ -191,21 +192,22 @@ function saveLocalInscripcion(data) {
     }
 }
 
-// Obtener cantidad de inscriptos para un taller en un horario específico
-function getInscriptosCount(tallerTitulo, horario, remoteCounts = null) {
-    const key = tallerTitulo.toLowerCase().trim() + "|||" + (horario || "").toLowerCase().trim();
+// Obtener cantidad de inscriptos para un taller en un horario y días específicos
+function getInscriptosCount(tallerTitulo, dias, horario, remoteCounts = null) {
+    const key = tallerTitulo.toLowerCase().trim() + "|||" + (dias || "").toLowerCase().trim() + "|||" + (horario || "").toLowerCase().trim();
     if (remoteCounts && typeof remoteCounts[key] === "number") {
         return remoteCounts[key];
     }
     const locals = getLocalInscripciones();
     return locals.filter(item => {
         const t = (item.taller || "").toLowerCase().trim();
+        const d = (item.dias || "").toLowerCase().trim();
         const h = (item.horario || "").toLowerCase().trim();
-        return t === tallerTitulo.toLowerCase().trim() && h === (horario || "").toLowerCase().trim();
+        return t === tallerTitulo.toLowerCase().trim() && d === (dias || "").toLowerCase().trim() && h === (horario || "").toLowerCase().trim();
     }).length;
 }
 
-// Obtener cantidad total de inscriptos en un taller (sumando todos los horarios)
+// Obtener cantidad total de inscriptos en un taller (sumando todos los horarios/días)
 function getInscriptosTotalCount(tallerTitulo, remoteCounts = null) {
     if (remoteCounts) {
         const prefix = tallerTitulo.toLowerCase().trim() + "|||";
@@ -225,16 +227,35 @@ function getInscriptosTotalCount(tallerTitulo, remoteCounts = null) {
 function isLabAvailable(lab, remoteCounts = null) {
     const max = Number(lab.maxParticipantes) || 18;
     return lab.horarios.some(h => {
-        const current = getInscriptosCount(lab.titulo, h, remoteCounts);
+        const current = getInscriptosCount(lab.titulo, lab.dias || "", h, remoteCounts);
         return current < max;
     });
 }
 
 // Evalúa si un horario específico de un taller está disponible
 function isHorarioAvailable(lab, horario, remoteCounts = null) {
-    const current = getInscriptosCount(lab.titulo, horario, remoteCounts);
+    const current = getInscriptosCount(lab.titulo, lab.dias || "", horario, remoteCounts);
     const max = Number(lab.maxParticipantes) || 18;
     return current < max;
+}
+
+// Obtener cantidad de inscripciones de un estudiante por DNI
+function getInscripcionesCountByDNI(dni, remoteCounts = null) {
+    const cleanedDNI = cleanDoc(dni);
+    const locals = getLocalInscripciones();
+    return locals.filter(item => cleanDoc(item.dni) === cleanedDNI).length;
+}
+
+// Verificar si un estudiante ya está inscripto en un taller+días+horario específico
+function isAlreadyInscripto(dni, tallerTitulo, dias, horario) {
+    const cleanedDNI = cleanDoc(dni);
+    const locals = getLocalInscripciones();
+    return locals.some(item => {
+        return cleanDoc(item.dni) === cleanedDNI &&
+               (item.taller || "").toLowerCase().trim() === tallerTitulo.toLowerCase().trim() &&
+               (item.dias || "").toLowerCase().trim() === (dias || "").toLowerCase().trim() &&
+               (item.horario || "").toLowerCase().trim() === (horario || "").toLowerCase().trim();
+    });
 }
 
 // Normaliza el conjunto completo de talleres desde data_de_labs.json

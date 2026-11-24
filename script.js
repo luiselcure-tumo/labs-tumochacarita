@@ -1,5 +1,5 @@
 // ==========================================================
-// TUMO Chacarita Learning Labs — Cartelera (index.html)
+// TUMO Chacarita Flash Labs — Cartelera (index.html)
 // Carga data_de_labs.json, gestiona filtros, animaciones individuales por taller,
 // cálculo de cupos ("Disponible" / "No disponible") y modal de detalle.
 // ==========================================================
@@ -267,7 +267,7 @@ function renderCards() {
 
         // Botón blanco full-width inferior
         const signupBtn = disponible
-            ? `<a href="inscripcion.html?id=${encodeURIComponent(lab.id)}" class="btn card__btn">Solicitar vacante</a>`
+            ? `<a href="inscripcion.html?id=${encodeURIComponent(lab.id)}" class="btn card__btn">Inscribite</a>`
             : `<button type="button" class="btn card__btn is-disabled" disabled aria-disabled="true">No disponible (Cupo lleno)</button>`;
 
         // Animación individual única (1 de 33)
@@ -356,11 +356,17 @@ function openPanel(id) {
         ? `<p style="color: #b26a00; font-weight: 700;">⚠️ ${escapeHtml(lab.requisitos)}</p>`
         : `<p style="color: var(--green-dark); font-weight: 700;">✓ No requiere conocimientos previos</p>`;
 
+    // Show dias if available
+    if (lab.dias) {
+        const diasEl = $("[data-lab-dias]");
+        if (diasEl) diasEl.textContent = lab.dias;
+    }
+
     const cta = $("[data-lab-signup]");
     if (cta) {
         if (disponible) {
             cta.href = `inscripcion.html?id=${encodeURIComponent(lab.id)}`;
-            cta.textContent = "Solicitar vacante";
+            cta.textContent = "Inscribite";
             cta.classList.remove("is-disabled");
             cta.removeAttribute("disabled");
         } else {
@@ -456,8 +462,14 @@ async function initCartelera() {
         remoteCounts = counts;
         allLabs = processRawLabs(rawData);
 
-        // Guardar en variable global para que el chatbot pueda referenciar talleres
+        // Guardar en variable global para que otros scripts puedan referenciar talleres
         window.TUMO_LABS = allLabs;
+
+        // Actualizar dinámicamente la cantidad en el hero preview
+        const previewTitle = $(".hero__preview-title");
+        if (previewTitle) {
+            previewTitle.textContent = `${allLabs.length} Propuestas Creativas`;
+        }
 
         renderFilters();
         renderCards();

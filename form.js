@@ -1,5 +1,5 @@
 // ==========================================================
-// TUMO Chacarita Learning Labs — Formulario de Inscripción
+// TUMO Chacarita Flash Labs — Formulario de Inscripción
 // Valida DNI, Correo de TUMO, confirmación de horario y cupos máximos
 // Envío a Google Apps Script y persistencia local
 // ==========================================================
@@ -300,10 +300,26 @@ form.addEventListener("submit", async (e) => {
 
     // 5. VALIDACIÓN DE CAPACIDAD MÁXIMA EN EL ENVÍO:
     // Comprobar que el horario seleccionado aún tenga vacantes disponibles
-    const currentInscriptos = getInscriptosCount(selectedLab.titulo, selectedHorario, remoteCounts);
+    const currentInscriptos = getInscriptosCount(selectedLab.titulo, selectedLab.dias || "", selectedHorario, remoteCounts);
     if (currentInscriptos >= selectedLab.maxParticipantes) {
         msgEl.textContent = "Lo sentimos, este taller acaba de completar sus cupos máximos y ya no está disponible.";
         $("[data-submit]").disabled = true;
+        return;
+    }
+
+    // 6. VALIDACIÓN DE LÍMITE DE 2 INSCRIPCIONES POR ESTUDIANTE:
+    const maxPerStudent = (typeof EVENT !== "undefined" && EVENT.maxInscripcionesPorEstudiante) || 2;
+    const currentStudentCount = getInscripcionesCountByDNI(dni);
+    if (currentStudentCount >= maxPerStudent) {
+        setHint("dni", `Ya estás inscripto/a en ${currentStudentCount} Flash Lab(s). El máximo permitido es ${maxPerStudent}.`, true);
+        form.dni.focus();
+        return;
+    }
+
+    // 7. VALIDACIÓN: NO REPETIR EL MISMO TALLER+COMISIÓN
+    if (isAlreadyInscripto(dni, selectedLab.titulo, selectedLab.dias || "", selectedHorario)) {
+        setHint("dni", "Ya tenés una inscripción registrada para este mismo Flash Lab y horario.", true);
+        form.dni.focus();
         return;
     }
 
@@ -317,23 +333,29 @@ form.addEventListener("submit", async (e) => {
         dni,
         correo,
         taller: selectedLab.titulo,
+        dias: selectedLab.dias || "",
         horario: selectedHorario,
         disciplina: selectedLab.disciplina,
         maxCupos: selectedLab.maxParticipantes
     };
 
     try {
-        // Si hay URL de Google Apps Script configurada, enviar vía POST
+        // Si hay URL de Google Apps Script configurada, enviar vía POST como JSON
         if (GOOGLE_SCRIPT_URL) {
-            const formData = new URLSearchParams();
-            Object.entries(payload).forEach(([k, v]) => formData.append(k, v));
-
-            await fetch(GOOGLE_SCRIPT_URL, {
+            const res = await fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData.toString()
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
             });
+
+            const result = await res.json();
+
+            if (result.status === "error" || result.status === "no_disponible" || result.status === "ya_inscripto" || result.status === "limite_alcanzado" || result.status === "no_autorizado" || result.status === "busy") {
+                msgEl.textContent = result.message || "Ocurrió un error al procesar la inscripción.";
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Enviar inscripción";
+                return;
+            }
         }
 
         // Registrar en almacenamiento local para consistencia y pruebas
@@ -353,7 +375,7 @@ form.addEventListener("submit", async (e) => {
         console.error(err);
         msgEl.textContent = "Hubo un inconveniente al enviar la solicitud. Por favor, reintentá.";
         submitBtn.disabled = false;
-        submitBtn.textContent = "Enviar solicitud";
+        submitBtn.textContent = "Enviar inscripción";
     }
 });
 
