@@ -1,0 +1,39 @@
+# ============================================================
+# .gitignore — TUMO Chacarita Flash Labs Diciembre 2026
+# ============================================================
+
+# Datos personales de estudiantes — NO subir a repositorios públicos
+# Estos archivos contienen PII (DNI, nombres, correos) de 1,041 estudiantes
+students_workshops.json
+estudiantes_tumo_sheet.csv
+
+# Archivos temporales y de sistema
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+# Dependencias y entornos
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build / despliegue
+dist/
+build/
+.vercel/
+.netlify/
+
+# Configuración local sensible
+.env
+.env.local
+.env.*.local

@@ -67,13 +67,13 @@ function getWorkshopAnimation(idx) {
                 <div class="invent-bulb"><span class="bulb-icon">💡</span><span class="gear-cog gear-1">⚙️</span><span class="gear-cog gear-2">⚙️</span></div>
             </div>`;
         // 11. GenAI: Hackeá al chatbot
-        case 11:
         case 10:
+        case 11:
             return `<div class="anim-lab anim-lab--11">
                 <div class="bot-hack"><span class="hack-bot-face">🤖</span><span class="hack-lock">🔓</span><div class="matrix-lines">10110</div></div>
             </div>`;
         // 12. GenAI: Duelo musical
-        case 11:
+        case 12:
             return `<div class="anim-lab anim-lab--12">
                 <div class="music-duel"><span class="duel-dj">🎧</span><span class="duel-vs">VS</span><span class="duel-amp">🎸</span></div>
             </div>`;

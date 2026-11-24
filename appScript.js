@@ -4,8 +4,9 @@
 // ==============================================================================
 // Este script se vincula a una Hoja de Cálculo de Google (Google Sheets).
 // Recibe las solicitudes enviadas desde la web, valida que no se supere el cupo
-// máximo ("Participantes Máximos") **por taller + horario**, guarda los datos
+// máximo ("Participantes Máximos") **por taller + días + horario**, guarda los datos
 // del estudiante y retorna respuestas en formato JSON.
+// Clave compuesta para conteo y duplicados: taller|||dias|||horario (minúsculas, sin espacios extra).
 // ==============================================================================
 
 /**
@@ -35,17 +36,26 @@ function doPost(e) {
         "Correo TUMO",
         "Taller / Lab",
         "Horario",
-        "Disciplina"
+        "Disciplina",
+        "Días"
       ]);
-      sheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#5EB656").setFontColor("#ffffff");
+      sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#5EB656").setFontColor("#ffffff");
     }
 
-    // Extracción y limpieza de parámetros recibidos
-    var params = e.parameter || {};
+    // Extracción y limpieza de parámetros recibidos (soporta JSON y form-url-encoded)
+    var params = {};
+    try {
+        var postData = e.postData || {};
+        var contents = postData.contents || "{}";
+        params = JSON.parse(contents);
+    } catch (parseErr) {
+        params = e.parameter || {};
+    }
     var nombre = (params.nombre || "").trim();
     var dni = (params.dni || "").trim();
     var correo = (params.correo || "").trim();
     var taller = (params.taller || "").trim();
+    var dias = (params.dias || "").trim();
     var horario = (params.horario || "").trim();
     var disciplina = (params.disciplina || "").trim();
     var maxParticipantes = parseInt(params.maxCupos || "18", 10);
@@ -58,35 +68,51 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Leer datos existentes para contar inscriptos en este taller + horario
+    // Leer datos existentes para contar inscriptos y validar reglas de negocio
     var data = sheet.getDataRange().getValues();
     var inscriptosEnHorario = 0;
     var yaInscriptoDNI = false;
+    var totalInscriptosPorDNI = 0;
 
     // Columna 3 (índice 2): DNI
     // Columna 5 (índice 4): Taller
     // Columna 6 (índice 5): Horario
+    // Columna 8 (índice 7): Días
     for (var i = 1; i < data.length; i++) {
       var rowDni = String(data[i][2] || "").trim();
       var rowTaller = String(data[i][4] || "").trim().toLowerCase();
       var rowHorario = String(data[i][5] || "").trim().toLowerCase();
+      var rowDias = String(data[i][7] || "").trim().toLowerCase();
 
-      // Verificar si el estudiante ya solicitó este taller+horario con el mismo DNI
-      if (rowDni === dni && rowTaller === taller.toLowerCase() && rowHorario === horario.toLowerCase()) {
+      // Contabilizar total de inscripciones de este DNI (regla: máximo 2 por estudiante)
+      if (rowDni === dni) {
+        totalInscriptosPorDNI++;
+      }
+
+      // Verificar si el estudiante ya solicitó este taller+días+horario con el mismo DNI
+      if (rowDni === dni && rowTaller === taller.toLowerCase() && rowDias === dias.toLowerCase() && rowHorario === horario.toLowerCase()) {
         yaInscriptoDNI = true;
       }
 
-      // Contabilizar alumnos anotados en este taller + horario específico
-      if (rowTaller === taller.toLowerCase() && rowHorario === horario.toLowerCase()) {
+      // Contabilizar alumnos anotados en este taller + días + horario específico
+      if (rowTaller === taller.toLowerCase() && rowDias === dias.toLowerCase() && rowHorario === horario.toLowerCase()) {
         inscriptosEnHorario++;
       }
     }
 
-    // Validar si el alumno ya está anotado en este taller+horario
+    // VALIDACIÓN ACADÉMICA: Límite máximo de 2 inscripciones por estudiante
+    if (totalInscriptosPorDNI >= 2) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "limite_alcanzado",
+        message: "Ya alcanzaste el límite máximo de 2 inscripciones por estudiante."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Validar si el alumno ya está anotado en este taller+días+horario
     if (yaInscriptoDNI) {
       return ContentService.createTextOutput(JSON.stringify({
         status: "ya_inscripto",
-        message: "Ya tenés una solicitud registrada con este DNI para este taller en este horario."
+        message: "Ya tenés una solicitud registrada con este DNI para este taller en este horario y días."
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -108,7 +134,8 @@ function doPost(e) {
       correo,
       taller,
       horario,
-      disciplina
+      disciplina,
+      dias
     ]);
 
     var nuevaCantidad = inscriptosEnHorario + 1;
@@ -136,7 +163,7 @@ function doPost(e) {
 
 /**
  * Manejador de solicitudes GET (consulta de disponibilidad en tiempo real)
- * Devuelve conteos por taller+horario con clave compuesta "taller|||horario"
+ * Devuelve conteos por taller+días+horario con clave compuesta "taller|||dias|||horario"
  */
 function doGet(e) {
   try {
@@ -144,12 +171,14 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var counts = {};
 
-    // Contar inscriptos por taller+horario (Columna 5/índice 4: Taller, Columna 6/índice 5: Horario)
+    // Contar inscriptos por taller+días+horario
+    // Columna 5/índice 4: Taller, Columna 6/índice 5: Horario, Columna 8/índice 7: Días
     for (var i = 1; i < data.length; i++) {
       var taller = String(data[i][4] || "").trim();
       var horario = String(data[i][5] || "").trim();
+      var dias = String(data[i][7] || "").trim();
       if (taller && horario) {
-        var key = taller.toLowerCase() + "|||" + horario.toLowerCase();
+        var key = taller.toLowerCase() + "|||" + dias.toLowerCase() + "|||" + horario.toLowerCase();
         counts[key] = (counts[key] || 0) + 1;
       }
     }

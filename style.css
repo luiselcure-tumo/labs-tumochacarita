@@ -1235,6 +1235,34 @@ dialog::backdrop {
     transition: background-color 0.15s ease;
 }
 .lab-panel__close:hover { background: #e0e0e0; }
+
+/* Botón de cierre del pop card de confirmación */
+.confirm__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 1.1rem;
+    display: grid;
+    place-items: center;
+    transition: background-color 0.15s ease;
+}
+.confirm__close:hover { background: #e0e0e0; }
+
+html[data-theme="green"] .confirm__close {
+    background: #1b3318;
+    color: #ffffff;
+}
+html[data-theme="green"] .confirm__close:hover {
+    background: #254322;
+}
+
 .lab-panel__body { display: grid; gap: 1.2rem; margin-top: 1rem; }
 .lab-panel__facts {
     display: grid;

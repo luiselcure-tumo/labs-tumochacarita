@@ -5,7 +5,7 @@
 
 // URL de la Aplicación Web de Google Apps Script (implementada según appScript.js)
 // Si está vacía o se prueba localmente, el sistema opera con data_de_labs.json y almacenamiento local
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOYv4Yk4k4W7B0DNf1uAFWRW-KgRyNSzjQxD_griUpduSaP3hJ441jjPCVWt2gKiLndg/exec"; 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJHVhtCxtRyGetd5PMbkUJPfas3xw9ShH8WWKrNo1JN9eM0Chw0tHjRfs7qjVqijtmww/exec"; 
 
 const EVENT = {
     name: "Flash Labs Diciembre 2026",
@@ -164,6 +164,22 @@ const CLOCK_ICON = '<svg class="icon-clock" width="18" height="18" viewBox="0 0 
 // Icono SVG de personas / cupo
 const USERS_ICON = '<svg class="icon-users" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>';
 
+// Mapeo de disciplinas del sistema a claves de workshop del padrón TUMO (students_workshops.json)
+// Se usa para validación académica: el estudiante debe tener la disciplina en "complete" o "on going"
+const DISCIPLINA_TO_WORKSHOP_KEY = {
+    "Dibujo": "drawing",
+    "Fotografía": "photography",
+    "Cine": "cine",
+    "Música": "music",
+    "Videojuegos": "game_development",
+    "Modelado 3D": "3d_modeling",
+    "GenAI": "genai",
+    "Programación": "programming",
+    "GenAI + Programación": "genai_programming",
+    "Modelado 3D + Videojuegos": "3d_modeling_videojuegos",
+    "Música + Cine": "musica_cine"
+};
+
 // ==========================================================
 // Gestión de Almacenamiento Local y Conteos de Inscripciones
 // ==========================================================
@@ -192,7 +208,8 @@ function saveLocalInscripcion(data) {
     }
 }
 
-// Obtener cantidad de inscriptos para un taller en un horario y días específicos
+// Obtener cantidad de inscriptos para un taller en días y horario específicos
+// Clave compuesta: taller|||dias|||horario
 function getInscriptosCount(tallerTitulo, dias, horario, remoteCounts = null) {
     const key = tallerTitulo.toLowerCase().trim() + "|||" + (dias || "").toLowerCase().trim() + "|||" + (horario || "").toLowerCase().trim();
     if (remoteCounts && typeof remoteCounts[key] === "number") {
@@ -213,7 +230,7 @@ function getInscriptosTotalCount(tallerTitulo, remoteCounts = null) {
         const prefix = tallerTitulo.toLowerCase().trim() + "|||";
         let total = 0;
         for (const key in remoteCounts) {
-            if (key.toLowerCase().startsWith(prefix)) {
+            if (Object.prototype.hasOwnProperty.call(remoteCounts, key) && key.toLowerCase().startsWith(prefix)) {
                 total += remoteCounts[key];
             }
         }

@@ -3,6 +3,13 @@
 // Valida DNI, Correo de TUMO, confirmación de horario y cupos máximos
 // Envío a Google Apps Script y persistencia local
 // ==========================================================
+//
+// ⚠️ DEPENDENCIAS EXPLÍCITAS (cargar ANTES que este script):
+//   config.js provee: processRawLabs, slugify, cleanDoc, CLOCK_ICON, EVENT,
+//   getLocalInscripciones, saveLocalInscripcion, getInscriptosCount,
+//   isHorarioAvailable, isAlreadyInscripto, getInscripcionesCountByDNI, escapeHtml
+//   data_de_labs.js provee: window.RAW_DATA_DE_LABS
+// ==========================================================
 
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => root.querySelectorAll(sel);
@@ -11,6 +18,49 @@ const form = $("[data-signup]");
 let selectedLab = null;
 let selectedHorario = null;
 let remoteCounts = null;
+let padrónEstudiantes = null;
+
+// Cargar padrón de estudiantes desde students_workshops.json para validación académica
+async function cargarPadrónEstudiantes() {
+    try {
+        const res = await fetch("students_workshops.json");
+        if (res.ok) {
+            padrónEstudiantes = await res.json();
+        }
+    } catch (e) {
+        console.warn("No se pudo cargar students_workshops.json (validación académica deshabilitada):", e);
+    }
+}
+
+// Validar que el estudiante exista en el padrón de TUMO y tenga la disciplina en "complete" u "on going"
+function validarEstudianteTUMO(dni, disciplina) {
+    if (!padrónEstudiantes) {
+        return { valido: true }; // Si no se cargó el padrón, permitir (fallo abierto)
+    }
+
+    const estudiante = padrónEstudiantes[dni];
+    if (!estudiante) {
+        return {
+            valido: false,
+            mensaje: "El DNI no se encuentra en el padrón de estudiantes de TUMO Chacarita."
+        };
+    }
+
+    const workshopKey = DISCIPLINA_TO_WORKSHOP_KEY[disciplina];
+    if (!workshopKey) {
+        return { valido: true }; // No hay mapeo de disciplina, permitir
+    }
+
+    const estado = estudiante.disciplinas?.[workshopKey];
+    if (!estado || (estado !== "complete" && estado !== "on going")) {
+        return {
+            valido: false,
+            mensaje: "No tenés la disciplina '" + disciplina + "' en estado 'complete' u 'on going' en el padrón de TUMO."
+        };
+    }
+
+    return { valido: true };
+}
 
 function showView(viewName) {
     $$("[data-view]").forEach(el => {
@@ -62,7 +112,8 @@ async function initForm() {
     try {
         const [rawData, counts] = await Promise.all([
             getRawLabs(),
-            fetchRemoteCounts()
+            fetchRemoteCounts(),
+            cargarPadrónEstudiantes()
         ]);
 
         if (!rawData || !rawData.length) {
@@ -111,7 +162,7 @@ function fillChosenDetails() {
 function updateFormAvailability() {
     const lab = selectedLab;
     const maxCupos = Number(lab.maxParticipantes) || 18;
-    const currentInscriptos = getInscriptosCount(lab.titulo, selectedHorario, remoteCounts);
+    const currentInscriptos = getInscriptosCount(lab.titulo, lab.dias || "", selectedHorario, remoteCounts);
     const libres = Math.max(0, maxCupos - currentInscriptos);
     const disponible = currentInscriptos < maxCupos;
 
@@ -162,7 +213,7 @@ function openConfirmPopCard() {
 
     const timesWrap = $("[data-confirm-times]");
     timesWrap.innerHTML = lab.horarios.map((h, i) => {
-        const inscriptos = getInscriptosCount(lab.titulo, h, remoteCounts);
+        const inscriptos = getInscriptosCount(lab.titulo, lab.dias || "", h, remoteCounts);
         const libres = Math.max(0, maxCupos - inscriptos);
         const horarioDisponible = inscriptos < maxCupos;
         return `
@@ -210,12 +261,18 @@ function openConfirmPopCard() {
         form.nombre.focus();
     });
 
+    // Cerrar pop card al hacer clic en la X
+    const closeBtn = $("[data-lab-close]", dialog);
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => dialog.close());
+    }
+
     dialog.showModal();
 }
 
 // Actualiza el estado del pop card según el horario actualmente seleccionado
 function updatePopCardAvailability(lab, maxCupos) {
-    const currentInscriptos = getInscriptosCount(lab.titulo, selectedHorario, remoteCounts);
+    const currentInscriptos = getInscriptosCount(lab.titulo, lab.dias || "", selectedHorario, remoteCounts);
     const libres = Math.max(0, maxCupos - currentInscriptos);
     const disponible = currentInscriptos < maxCupos;
 
@@ -277,17 +334,24 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
-    // 2. Validar DNI
-    if (!dni || dni.length < 6) {
-        setHint("dni", "Ingresá un número de documento válido (mínimo 6 dígitos).", true);
+    // 2. Validar DNI (7 u 8 dígitos, sin puntos ni espacios)
+    if (!dni || !/^\d{7,8}$/.test(dni)) {
+        setHint("dni", "Ingresá un DNI válido de 7 u 8 dígitos (sin puntos ni espacios).", true);
         form.dni.focus();
         return;
     }
 
-    // 3. Validar Correo de TUMO
+    // 3. Validar Correo de TUMO (dominio institucional)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailDomain = correo.split("@").pop().toLowerCase();
+    const allowedDomains = ["tumo.world", "tumo.ar"];
     if (!correo || !emailRegex.test(correo)) {
         setHint("correo", "Ingresá una dirección de correo válida.", true);
+        form.correo.focus();
+        return;
+    }
+    if (!allowedDomains.includes(emailDomain)) {
+        setHint("correo", "El correo debe ser de TUMO (@tumo.world o @tumo.ar).", true);
         form.correo.focus();
         return;
     }
@@ -323,6 +387,15 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
+    // 8. VALIDACIÓN ACADÉMICA CONTRA PADRÓN DE TUMO:
+    // Verificar que el DNI exista y tenga la disciplina en "complete" u "on going"
+    const validacionAcademica = validarEstudianteTUMO(dni, selectedLab.disciplina);
+    if (!validacionAcademica.valido) {
+        setHint("dni", validacionAcademica.mensaje, true);
+        form.dni.focus();
+        return;
+    }
+
     // Estado visual de carga
     const submitBtn = $("[data-submit]");
     submitBtn.disabled = true;
@@ -340,25 +413,53 @@ form.addEventListener("submit", async (e) => {
     };
 
     try {
-        // Si hay URL de Google Apps Script configurada, enviar vía POST como JSON
+        // Si hay URL de Google Apps Script configurada, enviar vía POST como JSON con reintentos
+        let enviadoExitosamente = false;
         if (GOOGLE_SCRIPT_URL) {
-            const res = await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload)
-            });
+            const maxIntentos = 3;
+            for (let intento = 1; intento <= maxIntentos; intento++) {
+                try {
+                    const res = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload)
+                    });
 
-            const result = await res.json();
+                    const result = await res.json();
 
-            if (result.status === "error" || result.status === "no_disponible" || result.status === "ya_inscripto" || result.status === "limite_alcanzado" || result.status === "no_autorizado" || result.status === "busy") {
-                msgEl.textContent = result.message || "Ocurrió un error al procesar la inscripción.";
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Enviar inscripción";
-                return;
+                    if (result.status === "ok") {
+                        enviadoExitosamente = true;
+                        break;
+                    }
+
+                    // Errores de negocio del backend: no reintentar, mostrar mensaje
+                    if (result.status === "error" || result.status === "no_disponible" || result.status === "ya_inscripto" || result.status === "limite_alcanzado" || result.status === "no_autorizado" || result.status === "busy") {
+                        msgEl.textContent = result.message || "Ocurrió un error al procesar la inscripción.";
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Enviar inscripción";
+                        return;
+                    }
+
+                    // Si es otro error, reintentar si no es el último intento
+                    if (intento < maxIntentos) {
+                        await new Promise(r => setTimeout(r, 1000 * intento));
+                    }
+                } catch (fetchErr) {
+                    // Error de red: reintentar si no es el último intento
+                    if (intento < maxIntentos) {
+                        await new Promise(r => setTimeout(r, 1000 * intento));
+                    } else {
+                        throw fetchErr;
+                    }
+                }
             }
         }
 
         // Registrar en almacenamiento local para consistencia y pruebas
+        // Si el backend falló tras reintentos, al menos queda guardado localmente
+        if (!enviadoExitosamente && GOOGLE_SCRIPT_URL) {
+            console.warn("Backend no disponible tras reintentos. Guardando en localStorage.");
+        }
         saveLocalInscripcion(payload);
 
         // Mostrar pantalla de éxito
