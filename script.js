@@ -11,8 +11,39 @@ let allLabs = [];
 let activeFilter = "todas";
 let remoteCounts = null;
 
+// Animation number (1-33, matches .anim-lab--N in style.css) for each lab id
+const ANIM_BY_LAB = {
+    "tu-celular-tu-camara-profesional": 1,
+    "macrofotografia": 2,
+    "lightpainting": 3,
+    "sintesis-y-diseno-sonoro": 4,
+    "samples": 5,
+    "del-meme-al-hit": 6,
+    "edicion-de-trailers": 7,
+    "desarrollo-de-proyectos": 8,
+    "creacion-de-mundos-im-posibles": 9,
+    "laboratorio-de-inventos": 10,
+    "hackea-al-chatbot": 11,
+    "hackathon-ia": 13,
+    "texturizado-de-objetos": 15,
+    "pelea-de-verano-i": 16,
+    "pelea-de-verano-ii": 16,
+    "crea-tu-propio-juego-de-mesa": 17,
+    "arma-tu-cv-web": 18,
+    "adivinanza-de-palabras": 19,
+    "tu-propio-snack-box-asiatico": 24,
+    "taller-de-lettering": 26,
+    "laboratorio-de-historieta": 28,
+    "movimiento-infinito": 29,
+    "museo-interactivo": 32
+};
+
+function getLabAnimation(lab) {
+    return getWorkshopAnimation((ANIM_BY_LAB[lab.id] || 1) - 1);
+}
+
 // ==========================================================
-// 33 Animaciones Flat-Design Únicas (una para cada taller)
+// 33 Animaciones Flat-Design (índice 0-32)
 // ==========================================================
 function getWorkshopAnimation(idx) {
     switch (idx) {
@@ -68,12 +99,11 @@ function getWorkshopAnimation(idx) {
             </div>`;
         // 11. GenAI: Hackeá al chatbot
         case 10:
-        case 11:
             return `<div class="anim-lab anim-lab--11">
                 <div class="bot-hack"><span class="hack-bot-face">🤖</span><span class="hack-lock">🔓</span><div class="matrix-lines">10110</div></div>
             </div>`;
         // 12. GenAI: Duelo musical
-        case 12:
+        case 11:
             return `<div class="anim-lab anim-lab--12">
                 <div class="music-duel"><span class="duel-dj">🎧</span><span class="duel-vs">VS</span><span class="duel-amp">🎸</span></div>
             </div>`;
@@ -257,7 +287,6 @@ function renderCards() {
 
     wrap.innerHTML = filtered.map(lab => {
         const disponible = isLabAvailable(lab, remoteCounts);
-        const maxCupos = lab.maxParticipantes;
         const meta = lab.disciplinaMeta;
 
         // Badge de estado en la esquina superior derecha del área de medios
@@ -271,13 +300,16 @@ function renderCards() {
             : `<button type="button" class="btn card__btn is-disabled" disabled aria-disabled="true">No disponible (Cupo lleno)</button>`;
 
         // Animación individual única (1 de 33)
-        const artHtml = getWorkshopAnimation(lab.index);
+        const artHtml = getLabAnimation(lab);
         const iconHtml = meta.icon ? `<img src="${escapeHtml(meta.icon)}" alt="" aria-hidden="true">` : "";
 
-        // Píldoras de horarios
-        const timesHtml = lab.horarios.map(h => `
-            <span class="card__time-pill">${CLOCK_ICON} ${escapeHtml(h)}</span>
+        const timesHtml = lab.comisiones.map(c => `
+            <span class="card__time-pill">${CLOCK_ICON} ${escapeHtml(c.label)}</span>
         `).join("");
+        const daysHtml = lab.diasDelLab.map(d => {
+            const [dow, num] = d.split(" ");
+            return `<span class="card__day"><small>${escapeHtml(dow.toUpperCase())}</small><b>${escapeHtml(num)}</b></span>`;
+        }).join("");
 
         return `
             <article class="card card--${escapeHtml(meta.slug)} ${disponible ? '' : 'is-closed'}" data-lab-id="${escapeHtml(lab.id)}">
@@ -304,10 +336,7 @@ function renderCards() {
 
                 <!-- Días de cursada en fichas cuadradas de calendario -->
                 <div class="card__days">
-                    <span class="card__day"><small>JUE</small><b>10</b></span>
-                    <span class="card__day"><small>VIE</small><b>11</b></span>
-                    <span class="card__day"><small>MAR</small><b>15</b></span>
-                    <span class="card__day"><small>JUE</small><b>17</b></span>
+                    ${daysHtml}
                 </div>
 
                 ${signupBtn}
@@ -334,13 +363,10 @@ function openPanel(id) {
     const panel = $("[data-lab-panel]");
     if (!panel) return;
 
-    const currentInscriptos = getInscriptosTotalCount(lab.titulo, remoteCounts);
-    const maxCupos = lab.maxParticipantes;
     const disponible = isLabAvailable(lab, remoteCounts);
-    const libres = Math.max(0, maxCupos - currentInscriptos);
-    const meta = lab.disciplinaMeta;
+    const libres = getLabVacantes(lab, remoteCounts);
 
-    $("[data-lab-media]").innerHTML = getWorkshopAnimation(lab.index);
+    $("[data-lab-media]").innerHTML = getLabAnimation(lab);
     $("[data-lab-kicker]").textContent = `${lab.disciplina} · ${lab.horas}`;
     $("[data-lab-title]").textContent = lab.titulo;
     
@@ -349,18 +375,15 @@ function openPanel(id) {
         : `<span class="state state--no-disponible">No disponible · Cupo máximo alcanzado</span>`;
 
     $("[data-lab-intro]").textContent = lab.descripcion;
-    $("[data-lab-sched]").innerHTML = lab.horarios.map(h => `<p><strong>${escapeHtml(h)}</strong></p>`).join("");
-    $("[data-lab-capacidad]").textContent = `Mínimo: ${lab.minParticipantes} | Máximo: ${lab.maxParticipantes} participantes`;
+    $("[data-lab-sched]").innerHTML = lab.comisiones.map(c => {
+        const vacantes = getComisionVacantes(c, remoteCounts);
+        return `<p><strong>${escapeHtml(c.label)}</strong> · ${vacantes > 0 ? `${vacantes} vacantes` : "Cupo lleno"}</p>`;
+    }).join("");
+    $("[data-lab-capacidad]").textContent = `Cupo por comisión: ${lab.maxParticipantes} · Mínimo para abrir: ${lab.minParticipantes}`;
     
     $("[data-lab-requisito]").innerHTML = lab.tieneRequisito
         ? `<p style="color: #b26a00; font-weight: 700;">⚠️ ${escapeHtml(lab.requisitos)}</p>`
         : `<p style="color: var(--green-dark); font-weight: 700;">✓ No requiere conocimientos previos</p>`;
-
-    // Show dias if available
-    if (lab.dias) {
-        const diasEl = $("[data-lab-dias]");
-        if (diasEl) diasEl.textContent = lab.dias;
-    }
 
     const cta = $("[data-lab-signup]");
     if (cta) {
@@ -390,41 +413,54 @@ function initPanel() {
 }
 
 // Consulta de estado de inscripción en la sección FAQ
+async function fetchInscripciones(dni, correo) {
+    if (!GOOGLE_SCRIPT_URL) {
+        return getLocalInscripciones().filter(item =>
+            cleanDoc(item.dni) === dni && String(item.correo || "").toLowerCase() === correo);
+    }
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ accion: "consulta", dni, correo })
+    });
+    const data = await res.json();
+    if (data.status !== "ok") throw new Error(data.message || "consulta failed");
+    return data.inscripciones;
+}
+
 function initStatusChecker() {
     const form = $("[data-status-form]");
     if (!form) return;
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const input = $("#status-dni");
         const out = $("[data-status-result]");
-        const dni = cleanDoc(input.value);
+        const dni = cleanDoc($("#status-dni").value);
+        const correo = $("#status-correo").value.trim().toLowerCase();
 
-        if (!dni) {
-            out.textContent = "Por favor, ingresá un DNI válido.";
+        if (!dni || !correo) {
+            out.textContent = "Ingresá tu DNI y tu correo de TUMO.";
             out.className = "status__result is-warn";
             return;
         }
 
-        out.textContent = "Buscando solicitud en TUMO Chacarita…";
+        out.textContent = "Buscando tus inscripciones…";
         out.className = "status__result";
 
-        // Búsqueda en almacenamiento local
-        const localList = getLocalInscripciones();
-        const found = localList.filter(item => cleanDoc(item.dni) === dni);
-
-        if (found.length) {
-            const lines = [
-                `¡Hola ${found[0].nombre}!`,
-                `Encontramos tu solicitud registrada para el taller: ${found[0].taller}.`,
-                `Horario elegido: ${found[0].horario}.`,
-                `Correo TUMO registrado: ${found[0].correo}.`,
-                "Tu vacante está en proceso de asignación. Te contactaremos por mail antes del inicio."
-            ];
-            out.textContent = lines.join("\n");
-            out.className = "status__result is-ok";
-        } else {
-            out.textContent = "No encontramos solicitudes registradas con ese DNI en este dispositivo. Si recién enviaste tu formulario a través de Google Sheets, la confirmación oficial te llegará directamente a tu correo de TUMO.";
+        try {
+            const found = await fetchInscripciones(dni, correo);
+            if (found.length) {
+                const lines = found.map(i => `• ${i.taller}: ${i.dias} · ${i.horario}`);
+                out.textContent = ["Encontramos estas inscripciones:", ...lines,
+                    "Te enviaremos la confirmación por correo antes del inicio."].join("\n");
+                out.className = "status__result is-ok";
+            } else {
+                out.textContent = "No encontramos inscripciones con ese DNI y correo. Revisá que sean los mismos que usaste al inscribirte.";
+                out.className = "status__result is-warn";
+            }
+        } catch (err) {
+            console.error(err);
+            out.textContent = "No pudimos consultar tus inscripciones. Intentá de nuevo en unos minutos.";
             out.className = "status__result is-warn";
         }
     });

@@ -38,7 +38,7 @@
         <!-- HERO -->
         <section class="hero">
             <div class="hero__text">
-                <p class="tag">Diciembre 2026 · Exclusivo para estudiantes de TUMO Chacarita</p>
+                <p class="tag">14 al 17 de diciembre 2026 · Exclusivo para estudiantes de TUMO Chacarita</p>
                 <h1 class="hero__title">
                     <img class="hero__logo" src="assets/che_verano.png" alt="Che Diciembre · TUMO Chacarita">
                     <span class="hero__name">Flash Labs</span>
@@ -65,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                    <h3 class="hero__preview-title">33 Propuestas Creativas</h3>
+                    <h3 class="hero__preview-title">23 Propuestas Creativas</h3>
                     <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem;">
                         Fotografía, Música, Cine, IA Generativa, 3D, Videojuegos, Programación y Dibujo.
                     </p>
@@ -92,6 +92,7 @@
                         <li>Exclusivo para estudiantes activos de TUMO Chacarita</li>
                         <li>Vacantes limitadas por cupo máximo en cada taller</li>
                         <li><strong>Dos actividades por estudiante</strong></li>
+                        <li>Algunos Flash Labs piden tener completado el nivel I de un workshop</li>
                     </ul>
                 </div>
             </div>
@@ -143,10 +144,12 @@
                 <details class="faq__status" id="estado">
                     <summary>Buscar mis inscripciones por DNI</summary>
                     <div class="status">
-                        <p>Ingresá tu DNI para ver en qué Flash Labs estás inscripto/a:</p>
+                        <p>Ingresá tu DNI y el correo de TUMO que usaste al inscribirte:</p>
                         <form class="status__form" data-status-form>
                             <label class="sr-only" for="status-dni">DNI o documento</label>
                             <input id="status-dni" required autocapitalize="characters" placeholder="DNI del estudiante">
+                            <label class="sr-only" for="status-correo">Correo de TUMO</label>
+                            <input id="status-correo" type="email" required autocomplete="email" placeholder="estudiante@tumo.world">
                             <button type="submit" class="btn btn--green">Consultar</button>
                         </form>
                         <p class="status__result" data-status-result aria-live="polite"></p>
@@ -155,7 +158,7 @@
 
                 <details>
                     <summary>¿Cuándo y dónde se dictan los Flash Labs?</summary>
-                    <p>Los Flash Labs se desarrollarán del 10 al 18 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires.</p>
+                    <p>Los Flash Labs se desarrollarán del lunes 14 al jueves 17 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires. Cada taller tiene una o más comisiones con sus días y horarios.</p>
                 </details>
 
                 <details>
@@ -166,6 +169,11 @@
                 <details>
                     <summary>¿Me puedo anotar en más de un Flash Lab?</summary>
                     <p>Sí, podés inscribirte en hasta <strong>dos (2) Flash Labs distintos</strong>, siempre que no repitas el mismo taller. ¡Aprovechá para explorar diferentes disciplinas!</p>
+                </details>
+
+                <details>
+                    <summary>¿Hay requisitos para inscribirme?</summary>
+                    <p>Algunos Flash Labs piden tener completado el nivel I de un workshop (por ejemplo, Foto I o Música I). Lo vas a ver en el detalle de cada taller. Si no cumplís el requisito, el sistema no te deja inscribirte en ese taller.</p>
                 </details>
 
                 <details>
@@ -209,7 +217,7 @@
             
             <div class="lab-panel__facts">
                 <div>
-                    <span class="info__label">Horarios sugeridos</span>
+                    <span class="info__label">Comisiones (días y horario)</span>
                     <div class="info__value" data-lab-sched></div>
                 </div>
                 <div>

@@ -105,7 +105,7 @@ webLabs_2026/
 ├── theme.js                # Conmutador de tema claro/verde con View Transitions API
 ├── appScript.js            # Google Apps Script (backend opcional para Google Sheets)
 ├── style.css               # Estilos globales, identidad visual, temas, animaciones CSS
-├── data_de_labs.js         # Datos de los 33 talleres embebidos en window.RAW_DATA_DE_LABS
+├── data_de_labs.js         # Datos de los 23 talleres embebidos en window.RAW_DATA_DE_LABS
 ├── data_de_labs.json       # Mismo contenido en formato JSON (para consumo externo o migración)
 ├── assets/
 │   ├── Chacarita_Logo_Light.png
@@ -140,7 +140,7 @@ webLabs_2026/
 ### 1. Navegación en la Cartelera (`index.html`)
 
 1. El usuario accede a `index.html`.
-2. Se carga `data_de_labs.js` → `window.RAW_DATA_DE_LABS` con los 33 talleres.
+2. Se carga `data_de_labs.js` → `window.RAW_DATA_DE_LABS` con los 23 talleres.
 3. `script.js` procesa los datos (`processRawLabs`) y renderiza:
    - Filtros por disciplina.
    - Tarjetas de taller con animación flat-design, estado de disponibilidad y botón de inscripción.
@@ -204,12 +204,19 @@ Opción B — Con Live Server (recomendado para evitar problemas CORS con `fetch
 
 ### Paso 3: Configurar Google Apps Script (opcional)
 
-Si se desea almacenar las inscripciones en Google Sheets en lugar de solo `localStorage`:
+Los datos de los talleres viven en `data_de_labs.json` (un elemento por lab, con sus comisiones). Después de editarlo:
 
-1. Crear una Hoja de Cálculo en Google Drive.
-2. Abrir **Extensiones > Apps Script**.
-3. Pegar el contenido de `appScript.js` en el editor.
-4. Implementar como **Aplicación web**:
+```bash
+python scripts/build_labs.py   # valida y genera data_de_labs.js y appScriptCatalogo.js
+node --test tests/appscript.test.mjs
+```
+
+Para el backend en Google Sheets:
+
+1. Abrir la hoja de inscripciones y **Extensiones > Apps Script**.
+2. Pegar `appScript.js` en `Code.gs` y crear un segundo archivo `Catalogo.gs` con el contenido de `appScriptCatalogo.js`.
+3. La cuenta que implementa necesita acceso de lectura a la planilla del padrón (`PADRON_SPREADSHEET_ID` en `appScript.js`). Si no puede leerla, el script rechaza todas las inscripciones.
+4. Implementar como **Aplicación web** (o crear una nueva versión del deployment existente para mantener la URL):
    - Ejecutar como: `Yo`
    - Quién tiene acceso: `Cualquier usuario`
 5. Copiar la URL generada (`https://script.google.com/macros/s/.../exec`).
@@ -235,8 +242,9 @@ No se requiere build step ni variables de entorno excepto `GOOGLE_SCRIPT_URL` (o
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `POST` | `/exec` | Recibe inscripción, valida cupos, guarda en Google Sheets, retorna JSON |
-| `GET` | `/exec` | Retorna conteos de inscriptos por `taller|||horario` |
+| `POST` | `/exec` | `{nombre, dni, correo, comisionId}`: valida padrón, requisito, cupo y límite de 2 labs; guarda la fila |
+| `POST` | `/exec` | `{accion: "consulta", dni, correo}`: lista las inscripciones si DNI y correo coinciden |
+| `GET` | `/exec` | Retorna conteos de inscriptos por `comisionId` |
 
 ### Flujo de `doPost`
 
@@ -254,15 +262,15 @@ No se requiere build step ni variables de entorno excepto `GOOGLE_SCRIPT_URL` (o
 {
   "status": "ok",
   "message": "Inscripción exitosa",
-  "taller": "Tu celular, tu camara profesional",
-  "horario": "Turno Tarde (14:00 a 17:00)",
+  "taller": "Tu celular, tu cámara profesional",
+  "dias": "Mar 15",
+  "horario": "13 a 16 h",
   "inscriptos": 5,
-  "maxParticipantes": 14,
-  "disponible": true
+  "maxParticipantes": 14
 }
 ```
 
-Estados posibles: `ok`, `error`, `no_disponible`, `ya_inscripto`, `busy`.
+Estados posibles: `ok`, `error`, `busy`, `padron_no_disponible`, `dni_no_encontrado`, `requisito_no_cumplido`, `ya_inscripto`, `limite_alcanzado`, `no_disponible`.
 
 ---
 

@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="field" style="margin-top: 1rem;">
-                    <span>Horario seleccionado</span>
+                    <span>Comisión seleccionada</span>
                     <div class="field" style="font-weight: 700; color: var(--green-dark); background: #f0f8ef; padding: 0.8rem 1.2rem; border-radius: 12px;" data-chosen-horario></div>
                 </div>
 
@@ -97,7 +97,7 @@
                     <label class="field" data-field="correo">
                         <span>Correo electrónico (de TUMO) *</span>
                         <input name="correo" type="email" required autocomplete="email" placeholder="estudiante@tumo.world">
-                        <span class="field__hint" data-hint="correo">Ingresá tu correo institucional @tumo.world o el mail registrado en TUMO.</span>
+                        <span class="field__hint" data-hint="correo">Ingresá tu correo institucional @tumo.world o @tumo.ar.</span>
                     </label>
                 </div>
             </fieldset>
@@ -107,7 +107,7 @@
                 <legend><span class="signup__num">2</span> Reconfirmación</legend>
                 <label class="check" data-field="confirmo">
                     <input type="checkbox" name="confirmo" required>
-                    <span data-confirm-text>Confirmo que quiero solicitar una vacante en este taller y que puedo asistir en el horario seleccionado.</span>
+                    <span data-confirm-text>Confirmo que quiero solicitar una vacante en este taller y que puedo asistir a todos los encuentros de la comisión elegida.</span>
                 </label>
                 <span class="field__hint" data-hint="confirmo" style="color: #c62828; display: block; margin-top: 0.5rem;"></span>
             </fieldset>
@@ -130,7 +130,7 @@
                 <p style="margin-bottom: 0.5rem;"><strong>Estudiante:</strong> <span data-done-nombre></span></p>
                 <p style="margin-bottom: 0.5rem;"><strong>DNI:</strong> <span data-done-dni></span></p>
                 <p style="margin-bottom: 0.5rem;"><strong>Correo:</strong> <span data-done-correo></span></p>
-                <p style="margin-bottom: 0;"><strong>Horario confirmado:</strong> <span data-done-horario></span></p>
+                <p style="margin-bottom: 0;"><strong>Comisión:</strong> <span data-done-horario></span></p>
             </div>
             <p style="font-size: 0.95rem; color: var(--muted); margin-bottom: 2rem;">
                 Te enviaremos la confirmación definitiva por correo electrónico a tu casilla de TUMO antes del inicio del taller.
@@ -151,7 +151,7 @@
         </div>
 
         <div style="margin: 1.2rem 0; text-align: left;">
-            <p class="info__label" id="confirm-times-label">Elegí o confirmá tu horario:</p>
+            <p class="info__label" id="confirm-times-label">Elegí tu comisión (días y horario):</p>
             <div class="confirm__times" data-confirm-times role="radiogroup" aria-labelledby="confirm-times-label">
                 <!-- Se inyectan las opciones de horario dinámicamente -->
             </div>

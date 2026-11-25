@@ -12,7 +12,7 @@ const EVENT = {
     center: "TUMO Chacarita",
     city: "Buenos Aires",
     dates: "Diciembre de 2026",
-    period: "Del 10 al 18 de diciembre de 2026",
+    period: "Del 14 al 17 de diciembre de 2026",
     place: "TUMO Chacarita",
     price: "Gratuito",
     contact: "familias.chacarita@tumo.ar",
@@ -23,20 +23,21 @@ const EVENT = {
     rules: [
         "Exclusivo para estudiantes de TUMO Chacarita.",
         "Cada estudiante puede inscribirse en hasta dos (2) Flash Labs distintos de diciembre.",
-        "Se requiere completar Nombre y apellido, DNI y correo electrónico de TUMO (@tumo.world).",
+        "Algunos Flash Labs piden tener completado el nivel I de un workshop.",
+        "Se requiere completar Nombre y apellido, DNI y correo electrónico de TUMO (@tumo.world o @tumo.ar).",
         "Cada taller tiene un cupo limitado (Participantes Máximos). Una vez alcanzado, se marca como 'No disponible'.",
         "La confirmación de la vacante se notifica por correo electrónico oficial de TUMO.",
         "Todas las actividades y talleres son 100% gratuitos."
     ],
     faq: [
         ["¿Cuándo y dónde se dictan los Flash Labs?", 
-         "Los Flash Labs se desarrollarán del 10 al 18 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires."],
+         "Los Flash Labs se desarrollarán del lunes 14 al jueves 17 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires."],
         ["¿Quiénes pueden participar?", 
          "Son actividades exclusivas para estudiantes activos de TUMO Chacarita que tengan al menos una disciplina en estado \"complete\" u \"on going\"."],
         ["¿Me puedo anotar en más de un Flash Lab?", 
          "Sí, podés inscribirte en hasta dos (2) Flash Labs distintos, siempre que no repitas el mismo taller."],
         ["¿Qué datos me piden para inscribirme?", 
-         "Tu nombre y apellido, DNI y tu correo electrónico de TUMO (@tumo.world)."],
+         "Tu nombre y apellido, DNI y tu correo electrónico de TUMO (@tumo.world o @tumo.ar)."],
         ["¿Qué pasa si un taller dice 'No disponible'?", 
          "Significa que el taller alcanzó el número máximo de participantes. Te recomendamos elegir otra de las opciones disponibles en la cartelera."],
         ["¿Tienen costo los talleres?", 
@@ -140,14 +141,6 @@ const escapeHtml = (text) => String(text ?? "").replace(/[&<>"']/g, (c) =>
 // Normalización de documento DNI: sólo letras y números, sin espacios ni puntos
 const cleanDoc = (v) => String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 
-// Normalización de Horarios (TM, TT, etc.)
-function formatHorario(raw) {
-    if (!raw) return "Horario a coordinar";
-    if (raw === "TM") return "Turno Mañana (09:00 a 12:00)";
-    if (raw === "TT") return "Turno Tarde (14:00 a 17:00)";
-    return String(raw).replace(/\s+a\s+/gi, " a ").trim();
-}
-
 // Genera un slug identificador estable para cada taller
 function slugify(text) {
     return String(text || "")
@@ -164,24 +157,8 @@ const CLOCK_ICON = '<svg class="icon-clock" width="18" height="18" viewBox="0 0 
 // Icono SVG de personas / cupo
 const USERS_ICON = '<svg class="icon-users" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>';
 
-// Mapeo de disciplinas del sistema a claves de workshop del padrón TUMO (students_workshops.json)
-// Se usa para validación académica: el estudiante debe tener la disciplina en "complete" o "on going"
-const DISCIPLINA_TO_WORKSHOP_KEY = {
-    "Dibujo": "drawing",
-    "Fotografía": "photography",
-    "Cine": "cine",
-    "Música": "music",
-    "Videojuegos": "game_development",
-    "Modelado 3D": "3d_modeling",
-    "GenAI": "genai",
-    "Programación": "programming",
-    "GenAI + Programación": "genai_programming",
-    "Modelado 3D + Videojuegos": "3d_modeling_videojuegos",
-    "Música + Cine": "musica_cine"
-};
-
 // ==========================================================
-// Gestión de Almacenamiento Local y Conteos de Inscripciones
+// Gestión de Almacenamiento Local y Conteos por Comisión
 // ==========================================================
 const STORAGE_KEY = "tumo_chacarita_flash_labs_inscripciones";
 
@@ -197,10 +174,7 @@ function getLocalInscripciones() {
 function saveLocalInscripcion(data) {
     try {
         const items = getLocalInscripciones();
-        items.push({
-            ...data,
-            timestamp: new Date().toISOString()
-        });
+        items.push({ ...data, timestamp: new Date().toISOString() });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
         return true;
     } catch {
@@ -208,120 +182,82 @@ function saveLocalInscripcion(data) {
     }
 }
 
-// Obtener cantidad de inscriptos para un taller en días y horario específicos
-// Clave compuesta: taller|||dias|||horario
-function getInscriptosCount(tallerTitulo, dias, horario, remoteCounts = null) {
-    const key = tallerTitulo.toLowerCase().trim() + "|||" + (dias || "").toLowerCase().trim() + "|||" + (horario || "").toLowerCase().trim();
-    if (remoteCounts && typeof remoteCounts[key] === "number") {
-        return remoteCounts[key];
-    }
-    const locals = getLocalInscripciones();
-    return locals.filter(item => {
-        const t = (item.taller || "").toLowerCase().trim();
-        const d = (item.dias || "").toLowerCase().trim();
-        const h = (item.horario || "").toLowerCase().trim();
-        return t === tallerTitulo.toLowerCase().trim() && d === (dias || "").toLowerCase().trim() && h === (horario || "").toLowerCase().trim();
-    }).length;
-}
-
-// Obtener cantidad total de inscriptos en un taller (sumando todos los horarios/días)
-function getInscriptosTotalCount(tallerTitulo, remoteCounts = null) {
+function getInscriptosCount(comisionId, remoteCounts = null) {
     if (remoteCounts) {
-        const prefix = tallerTitulo.toLowerCase().trim() + "|||";
-        let total = 0;
-        for (const key in remoteCounts) {
-            if (Object.prototype.hasOwnProperty.call(remoteCounts, key) && key.toLowerCase().startsWith(prefix)) {
-                total += remoteCounts[key];
-            }
-        }
-        if (total > 0) return total;
+        return typeof remoteCounts[comisionId] === "number" ? remoteCounts[comisionId] : 0;
     }
-    const locals = getLocalInscripciones();
-    return locals.filter(item => (item.taller || "").toLowerCase().trim() === tallerTitulo.toLowerCase().trim()).length;
+    return getLocalInscripciones().filter(item => item.comisionId === comisionId).length;
 }
 
-// Evalúa si un taller tiene al menos un horario disponible
+function getComisionVacantes(comision, remoteCounts = null) {
+    return Math.max(0, comision.cupo - getInscriptosCount(comision.id, remoteCounts));
+}
+
+function isComisionAvailable(comision, remoteCounts = null) {
+    return getComisionVacantes(comision, remoteCounts) > 0;
+}
+
 function isLabAvailable(lab, remoteCounts = null) {
-    const max = Number(lab.maxParticipantes) || 18;
-    return lab.horarios.some(h => {
-        const current = getInscriptosCount(lab.titulo, lab.dias || "", h, remoteCounts);
-        return current < max;
-    });
+    return lab.comisiones.some(c => isComisionAvailable(c, remoteCounts));
 }
 
-// Evalúa si un horario específico de un taller está disponible
-function isHorarioAvailable(lab, horario, remoteCounts = null) {
-    const current = getInscriptosCount(lab.titulo, lab.dias || "", horario, remoteCounts);
-    const max = Number(lab.maxParticipantes) || 18;
-    return current < max;
+function getLabVacantes(lab, remoteCounts = null) {
+    return lab.comisiones.reduce((sum, c) => sum + getComisionVacantes(c, remoteCounts), 0);
 }
 
-// Obtener cantidad de inscripciones de un estudiante por DNI
-function getInscripcionesCountByDNI(dni, remoteCounts = null) {
+// Local pre-checks only; the Apps Script enforces these rules.
+function getInscripcionesCountByDNI(dni) {
     const cleanedDNI = cleanDoc(dni);
-    const locals = getLocalInscripciones();
-    return locals.filter(item => cleanDoc(item.dni) === cleanedDNI).length;
+    return getLocalInscripciones().filter(item => cleanDoc(item.dni) === cleanedDNI).length;
 }
 
-// Verificar si un estudiante ya está inscripto en un taller+días+horario específico
-function isAlreadyInscripto(dni, tallerTitulo, dias, horario) {
+function isAlreadyInscripto(dni, labId) {
     const cleanedDNI = cleanDoc(dni);
-    const locals = getLocalInscripciones();
-    return locals.some(item => {
-        return cleanDoc(item.dni) === cleanedDNI &&
-               (item.taller || "").toLowerCase().trim() === tallerTitulo.toLowerCase().trim() &&
-               (item.dias || "").toLowerCase().trim() === (dias || "").toLowerCase().trim() &&
-               (item.horario || "").toLowerCase().trim() === (horario || "").toLowerCase().trim();
-    });
+    return getLocalInscripciones().some(item => cleanDoc(item.dni) === cleanedDNI && item.labId === labId);
 }
 
-// Normaliza el conjunto completo de talleres desde data_de_labs.json
+const DAY_ORDER = ["Lun 14", "Mar 15", "Mié 16", "Jue 17"];
+
+function formatHoras(horas) {
+    return String(horas).replace(".", ",") + " h";
+}
+
+// Normaliza los talleres de data_de_labs.json (un elemento por lab, con sus comisiones)
 function processRawLabs(rawList) {
-    let currentDisciplina = "General";
     return rawList.map((item, idx) => {
-        if (item["Disciplinas"] && item["Disciplinas"].trim()) {
-            currentDisciplina = item["Disciplinas"].trim();
-        }
-        const titulo = (item["Título / Tema"] || "").trim().replace(/^"|"$/g, "");
-        const id = `lab-${idx + 1}-${slugify(titulo)}`;
-        const max = parseInt(item["Participantes  Máximos"] || item["Participantes Máximos"] || 18, 10);
-        const min = parseInt(item["Participantes Minimos"] || 1, 10);
-        const horarioRaw = item["Horario sugerido"] || "A coordinar";
-        
-        let horarios = [];
-        if (horarioRaw.includes("\n")) {
-            horarios = horarioRaw.split("\n").map(h => formatHorario(h.trim())).filter(Boolean);
-        } else if (horarioRaw.toLowerCase().includes(" y de ")) {
-            horarios = horarioRaw.split(/\s+y\s+de\s+/i).map(h => formatHorario(h.trim()));
-        } else {
-            horarios = [formatHorario(horarioRaw)];
-        }
-
-        const discMeta = DISCIPLINAS[currentDisciplina] || {
-            slug: slugify(currentDisciplina),
+        const discMeta = DISCIPLINAS[item.disciplina] || {
+            slug: slugify(item.disciplina),
             color: "#5EB656",
             icon: "assets/icons/gen_AI.png",
             art: "gen_AI",
-            label: currentDisciplina
+            label: item.disciplina
         };
-
-        const requisitosText = item["Requisitos"] || "No";
-        const tieneRequisito = requisitosText && !/^\s*no\b/i.test(requisitosText.trim());
+        const comisiones = item.comisiones.map(c => ({
+            id: c.id,
+            dias: c.dias,
+            diasTexto: c.dias.join(" y "),
+            horario: c.horario,
+            cupo: Number(c.cupo || item.maxParticipantes),
+            label: `${c.dias.join(" y ")} · ${c.horario}`
+        }));
+        const diasDelLab = DAY_ORDER.filter(d => comisiones.some(c => c.dias.includes(d)));
+        const encuentrosTexto = item.encuentros === 1 ? "1 encuentro" : `${item.encuentros} encuentros`;
 
         return {
-            id,
+            id: item.id,
             index: idx,
-            titulo,
-            disciplina: currentDisciplina,
+            titulo: item.titulo,
+            disciplina: item.disciplina,
             disciplinaMeta: discMeta,
-            descripcion: item["Descripción"] || "Propuesta práctica intensiva junto al equipo de TUMO Chacarita.",
-            horas: item["Horas"] || "3hs",
-            horarioRaw,
-            horarios,
-            minParticipantes: min,
-            maxParticipantes: max,
-            requisitos: requisitosText,
-            tieneRequisito
+            descripcion: item.descripcion || "Propuesta práctica intensiva junto al equipo de TUMO Chacarita.",
+            encuentros: item.encuentros,
+            horas: `${encuentrosTexto} · ${formatHoras(item.horasTotales)}`,
+            minParticipantes: item.minParticipantes,
+            maxParticipantes: item.maxParticipantes,
+            requisitos: item.requisito.texto,
+            tieneRequisito: item.requisito.workshops.length > 0,
+            comisiones,
+            diasDelLab
         };
     });
 }
