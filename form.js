@@ -11,6 +11,7 @@ const form = $("[data-signup]");
 let selectedLab = null;
 let selectedComision = null;
 let remoteCounts = null;
+let countsPending = Boolean(GOOGLE_SCRIPT_URL);
 
 function showView(viewName) {
     $$("[data-view]").forEach(el => {
@@ -56,15 +57,16 @@ async function initForm() {
         return showErrorMessage("Para solicitar una vacante, primero debés elegir un taller en la cartelera.");
     }
 
+    const countsRequest = fetchRemoteCounts();
+
     try {
-        const [rawData, counts] = await Promise.all([getRawLabs(), fetchRemoteCounts()]);
+        const rawData = await getRawLabs();
 
         if (!rawData || !rawData.length) {
             throw new Error("No se pudo cargar la información de los talleres.");
         }
 
         const labs = processRawLabs(rawData);
-        remoteCounts = counts;
         selectedLab = labs.find(l => l.id === labId || slugify(l.titulo) === slugify(labId));
 
         if (!selectedLab) {
@@ -73,6 +75,16 @@ async function initForm() {
 
         fillChosenDetails();
         openConfirmPopCard();
+
+        remoteCounts = await countsRequest;
+        countsPending = false;
+        if (!isComisionAvailable(selectedComision, remoteCounts)) {
+            selectedComision = selectedLab.comisiones.find(c => isComisionAvailable(c, remoteCounts)) || selectedComision;
+        }
+        renderComisionOptions();
+        updatePopCardAvailability();
+        updateComisionDisplay();
+        updateFormAvailability();
     } catch (err) {
         console.error(err);
         showErrorMessage("Ocurrió un error al cargar el taller. Por favor, volvé a la cartelera e intentalo nuevamente.");
@@ -101,6 +113,14 @@ function setFullAlert(el, isFull) {
 }
 
 function updateFormAvailability() {
+    const submit = $("[data-submit]");
+    if (countsPending) {
+        $("[data-chosen-cupos]").textContent = "Consultando cupos…";
+        setFullAlert($("[data-chosen-full]"), false);
+        submit.disabled = false;
+        submit.textContent = "Enviar solicitud";
+        return;
+    }
     const vacantes = getComisionVacantes(selectedComision, remoteCounts);
     const disponible = vacantes > 0;
 
@@ -109,7 +129,6 @@ function updateFormAvailability() {
         : "Cupo completo";
     setFullAlert($("[data-chosen-full]"), !disponible);
 
-    const submit = $("[data-submit]");
     submit.disabled = !disponible;
     submit.textContent = disponible ? "Enviar solicitud" : "No disponible (Cupo lleno)";
 }
@@ -120,6 +139,24 @@ function updateComisionDisplay() {
         `Confirmo que quiero solicitar una vacante en ${selectedLab.titulo} y que puedo asistir ${selectedComision.dias.length > 1 ? "a todos los encuentros" : "al encuentro"}: ${selectedComision.label}.`;
 }
 
+function renderComisionOptions() {
+    const timesWrap = $("[data-confirm-times]");
+    if (!timesWrap) return;
+    timesWrap.innerHTML = selectedLab.comisiones.map(c => {
+        const vacantes = getComisionVacantes(c, remoteCounts);
+        const disponible = countsPending || vacantes > 0;
+        const spots = countsPending ? "Consultando…" : (disponible ? vacantes + " vacantes" : "Cupo lleno");
+        return `
+        <button type="button" class="time-opt ${disponible ? "" : "is-full"}" role="radio"
+            data-comision="${escapeHtml(c.id)}" aria-checked="${c.id === selectedComision.id ? "true" : "false"}"
+            ${disponible ? "" : "disabled"}>
+            ${CLOCK_ICON}
+            <span>${escapeHtml(c.label)}</span>
+            <span class="time-opt__spots">${spots}</span>
+        </button>`;
+    }).join("");
+}
+
 function openConfirmPopCard() {
     const dialog = $("[data-confirm]");
     if (!dialog) {
@@ -127,33 +164,17 @@ function openConfirmPopCard() {
         return;
     }
 
-    const lab = selectedLab;
-    $("[data-confirm-name]").textContent = lab.titulo;
-
-    const timesWrap = $("[data-confirm-times]");
-    timesWrap.innerHTML = lab.comisiones.map(c => {
-        const vacantes = getComisionVacantes(c, remoteCounts);
-        const disponible = vacantes > 0;
-        return `
-        <button type="button" class="time-opt ${disponible ? "" : "is-full"}" role="radio"
-            data-comision="${escapeHtml(c.id)}" aria-checked="${c.id === selectedComision.id ? "true" : "false"}"
-            ${disponible ? "" : "disabled"}>
-            ${CLOCK_ICON}
-            <span>${escapeHtml(c.label)}</span>
-            <span class="time-opt__spots">${disponible ? vacantes + " vacantes" : "Cupo lleno"}</span>
-        </button>`;
-    }).join("");
-
+    $("[data-confirm-name]").textContent = selectedLab.titulo;
+    renderComisionOptions();
     updatePopCardAvailability();
 
-    $$(".time-opt", timesWrap).forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (btn.disabled) return;
-            $$(".time-opt", timesWrap).forEach(b => b.setAttribute("aria-checked", "false"));
-            btn.setAttribute("aria-checked", "true");
-            selectedComision = lab.comisiones.find(c => c.id === btn.dataset.comision);
-            updatePopCardAvailability();
-        });
+    $("[data-confirm-times]").addEventListener("click", (e) => {
+        const btn = e.target.closest(".time-opt");
+        if (!btn || btn.disabled) return;
+        $$(".time-opt", e.currentTarget).forEach(b => b.setAttribute("aria-checked", "false"));
+        btn.setAttribute("aria-checked", "true");
+        selectedComision = selectedLab.comisiones.find(c => c.id === btn.dataset.comision);
+        updatePopCardAvailability();
     });
 
     $("[data-confirm-yes]").addEventListener("click", () => {
@@ -175,7 +196,7 @@ function openConfirmPopCard() {
 }
 
 function updatePopCardAvailability() {
-    const disponible = isComisionAvailable(selectedComision, remoteCounts);
+    const disponible = countsPending || isComisionAvailable(selectedComision, remoteCounts);
     setFullAlert($("[data-confirm-full]"), !disponible);
     const yesBtn = $("[data-confirm-yes]");
     yesBtn.disabled = !disponible;
@@ -258,7 +279,7 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
-    if (!isComisionAvailable(selectedComision, remoteCounts)) {
+    if (!countsPending && !isComisionAvailable(selectedComision, remoteCounts)) {
         msgEl.textContent = "Lo sentimos, esta comisión completó su cupo. Elegí otra comisión u otro taller.";
         $("[data-submit]").disabled = true;
         return;

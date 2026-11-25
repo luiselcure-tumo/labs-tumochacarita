@@ -10,6 +10,8 @@ const $$ = (sel, root = document) => root.querySelectorAll(sel);
 let allLabs = [];
 let activeFilter = "todas";
 let remoteCounts = null;
+let countsPending = Boolean(GOOGLE_SCRIPT_URL);
+let openPanelId = null;
 
 // Animation number (1-33, matches .anim-lab--N in style.css) for each lab id
 const ANIM_BY_LAB = {
@@ -290,12 +292,14 @@ function renderCards() {
         const meta = lab.disciplinaMeta;
 
         // Badge de estado en la esquina superior derecha del área de medios
-        const statusBadge = disponible
-            ? `<span class="card__status-pill">● Disponible</span>`
-            : `<span class="card__status-pill state--no-disponible">● No disponible</span>`;
+        const statusBadge = countsPending
+            ? `<span class="card__status-pill state--pending">● Consultando cupos</span>`
+            : disponible
+                ? `<span class="card__status-pill">● Disponible</span>`
+                : `<span class="card__status-pill state--no-disponible">● No disponible</span>`;
 
-        // Botón blanco full-width inferior
-        const signupBtn = disponible
+        // The form re-checks availability, so the link stays enabled while counts load
+        const signupBtn = (countsPending || disponible)
             ? `<a href="inscripcion.html?id=${encodeURIComponent(lab.id)}" class="btn card__btn">Inscribite</a>`
             : `<button type="button" class="btn card__btn is-disabled" disabled aria-disabled="true">No disponible (Cupo lleno)</button>`;
 
@@ -312,7 +316,7 @@ function renderCards() {
         }).join("");
 
         return `
-            <article class="card card--${escapeHtml(meta.slug)} ${disponible ? '' : 'is-closed'}" data-lab-id="${escapeHtml(lab.id)}">
+            <article class="card card--${escapeHtml(meta.slug)} ${countsPending || disponible ? '' : 'is-closed'}" data-lab-id="${escapeHtml(lab.id)}">
                 <!-- Área de ilustración visual con estado en esquina superior derecha -->
                 <div class="card__media">
                     <div class="card__status-wrap">${statusBadge}</div>
@@ -370,12 +374,15 @@ function openPanel(id) {
     $("[data-lab-kicker]").textContent = `${lab.disciplina} · ${lab.horas}`;
     $("[data-lab-title]").textContent = lab.titulo;
     
-    $("[data-lab-state]").innerHTML = disponible
+    $("[data-lab-state]").innerHTML = countsPending
+        ? `<span class="state state--pending">Consultando cupos…</span>`
+        : disponible
         ? `<span class="state state--disponible">Disponible · ${libres} vacantes libres</span>`
         : `<span class="state state--no-disponible">No disponible · Cupo máximo alcanzado</span>`;
 
     $("[data-lab-intro]").textContent = lab.descripcion;
     $("[data-lab-sched]").innerHTML = lab.comisiones.map(c => {
+        if (countsPending) return `<p><strong>${escapeHtml(c.label)}</strong></p>`;
         const vacantes = getComisionVacantes(c, remoteCounts);
         return `<p><strong>${escapeHtml(c.label)}</strong> · ${vacantes > 0 ? `${vacantes} vacantes` : "Cupo lleno"}</p>`;
     }).join("");
@@ -387,7 +394,7 @@ function openPanel(id) {
 
     const cta = $("[data-lab-signup]");
     if (cta) {
-        if (disponible) {
+        if (countsPending || disponible) {
             cta.href = `inscripcion.html?id=${encodeURIComponent(lab.id)}`;
             cta.textContent = "Inscribite";
             cta.classList.remove("is-disabled");
@@ -399,7 +406,8 @@ function openPanel(id) {
         }
     }
 
-    panel.showModal();
+    openPanelId = id;
+    if (!panel.open) panel.showModal();
 }
 
 function initPanel() {
@@ -407,6 +415,7 @@ function initPanel() {
     if (!panel) return;
     const closeBtn = $("[data-lab-close]");
     if (closeBtn) closeBtn.addEventListener("click", () => panel.close());
+    panel.addEventListener("close", () => { openPanelId = null; });
     panel.addEventListener("click", (e) => {
         if (e.target === panel) panel.close();
     });
@@ -485,23 +494,18 @@ async function initCartelera() {
     initPanel();
     initStatusChecker();
 
+    const countsRequest = fetchRemoteCounts();
+
     try {
-        const [rawData, counts] = await Promise.all([
-            getRawLabs(),
-            fetchRemoteCounts()
-        ]);
+        const rawData = await getRawLabs();
 
         if (!rawData || !rawData.length) {
             throw new Error("No se encontraron talleres en RAW_DATA_DE_LABS ni mediante fetch");
         }
 
-        remoteCounts = counts;
         allLabs = processRawLabs(rawData);
-
-        // Guardar en variable global para que otros scripts puedan referenciar talleres
         window.TUMO_LABS = allLabs;
 
-        // Actualizar dinámicamente la cantidad en el hero preview
         const previewTitle = $(".hero__preview-title");
         if (previewTitle) {
             previewTitle.textContent = `${allLabs.length} Propuestas Creativas`;
@@ -509,6 +513,11 @@ async function initCartelera() {
 
         renderFilters();
         renderCards();
+
+        remoteCounts = await countsRequest;
+        countsPending = false;
+        renderCards();
+        if (openPanelId) openPanel(openPanelId);
 
     } catch (err) {
         console.error(err);

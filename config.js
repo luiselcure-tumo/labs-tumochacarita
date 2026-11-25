@@ -238,7 +238,7 @@ function processRawLabs(rawList) {
             diasTexto: c.dias.join(" y "),
             horario: c.horario,
             cupo: Number(c.cupo || item.maxParticipantes),
-            label: `${c.dias.join(" y ")} · ${c.horario}`
+            label: `${c.dias.join(" y ")} · ${c.horario.replace(/ h$/, " h")}`
         }));
         const diasDelLab = DAY_ORDER.filter(d => comisiones.some(c => c.dias.includes(d)));
         const encuentrosTexto = item.encuentros === 1 ? "1 encuentro" : `${item.encuentros} encuentros`;

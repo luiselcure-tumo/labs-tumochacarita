@@ -1667,4 +1667,13 @@ html[data-theme="green"] .time-opt {
     .cards { grid-template-columns: 1fr; }
     .confirm__actions { flex-direction: column; }
     .confirm__actions .btn { width: 100%; }
+    .lab-panel__facts { grid-template-columns: 1fr; }
+    .lab-panel .state { white-space: normal; }
 }
+
+.nav__actions .btn { white-space: nowrap; }
+.time-opt > span:not(.time-opt__spots) { text-wrap: balance; }
+.state--pending { background: #f0f0f0; color: #555555; }
+.state--pending::before { background: #bdbdbd; }
+.card__status-pill.state--pending { color: #555555; }
+.card__status-pill.state--pending::before { background: #bdbdbd; }
