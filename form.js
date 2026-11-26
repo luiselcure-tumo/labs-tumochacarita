@@ -156,7 +156,7 @@ function updateComisionDisplay() {
             <span class="card__com-num">${i + 1}</span>
             <span class="card__com-text">
                 ${comisionDaysHtml(selectedComision)}
-                <small>${escapeHtml(selectedComision.horario.replace(/ h$/, "\u00a0h"))}</small>
+                ${comisionTimeHtml(selectedComision)}
             </span>
         </div>`;
     $("[data-confirm-text]").textContent =

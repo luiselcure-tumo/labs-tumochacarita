@@ -275,14 +275,14 @@ function comisionButtonsHtml(lab, { showVacantes = false, selectable = false, se
     return lab.comisiones.map((c, i) => {
         const vacantes = getComisionVacantes(c, remoteCounts);
         const full = !countsPending && vacantes === 0;
-        let extra = "";
-        if (full) extra = " · Cupo lleno";
-        else if (showVacantes && !countsPending) extra = ` · ${vacantes} ${vacantes === 1 ? "vacante" : "vacantes"}`;
+        let note = "";
+        if (full) note = "Cupo lleno";
+        else if (showVacantes && !countsPending) note = `${vacantes} ${vacantes === 1 ? "vacante" : "vacantes"}`;
         const inner = `
             <span class="card__com-num">${i + 1}</span>
             <span class="card__com-text">
                 ${comisionDaysHtml(c)}
-                <small>${escapeHtml(c.horario.replace(/ h$/, " h"))}${extra}</small>
+                ${comisionTimeHtml(c, note)}
             </span>`;
         if (selectable) {
             const checked = !full && c.id === selectedId;
@@ -461,7 +461,7 @@ function updatePanelSignup(lab) {
     cta.textContent = text;
 }
 
-const FIT_LEVELS = ["fit-1", "fit-2", "fit-3", "fit-4", "fit-5"];
+const FIT_LEVELS = ["fit-1", "fit-2", "fit-3", "fit-4", "fit-5", "fit-6"];
 
 // Adds compact levels one by one until the open panel fits the viewport without scrolling.
 function fitPanel(panel) {

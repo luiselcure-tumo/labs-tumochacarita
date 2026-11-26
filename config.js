@@ -223,6 +223,13 @@ function comisionDaysHtml(comision) {
     return `<span class="com-strip" aria-hidden="true">${cells}</span>`;
 }
 
+// Horario pill plus an optional status note (vacantes or cupo lleno)
+function comisionTimeHtml(comision, note = "") {
+    const horario = escapeHtml(comision.horario.replace(/ h$/, " h"));
+    const noteHtml = note ? `<small>${escapeHtml(note)}</small>` : "";
+    return `<span class="com-meta"><span class="com-time">${CLOCK_ICON}<b>${horario}</b></span>${noteHtml}</span>`;
+}
+
 function formatHoras(horas) {
     return String(horas).replace(".", ",") + " h";
 }
