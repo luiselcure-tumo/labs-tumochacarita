@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="style.css">
-    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css?v=20261126">
+    <script src="theme.js?v=20261126"></script>
 </head>
 <body>
 
@@ -59,8 +59,8 @@
             <div class="hero__art">
                 <div class="hero__card-preview">
                     <div class="hero__preview-art hero__preview-art--photo">
-                        <img src="img/propuestas-creativas.webp" width="880" height="587"
-                             alt="Estudiantes trabajando en computadoras en un aula de TUMO Chacarita"
+                        <img src="img/propuestas-creativas.webp" width="870" height="580"
+                             alt="Estudiantes con auriculares trabajando en computadoras con teclados MIDI en un aula de TUMO Chacarita"
                              fetchpriority="high" decoding="async">
                     </div>
                     <h3 class="hero__preview-title">23 Propuestas Creativas</h3>
@@ -198,32 +198,30 @@
 
     <!-- MODAL NATIVO DE DETALLE DE TALLER (<dialog>) -->
     <dialog class="lab-panel" data-lab-panel aria-labelledby="lab-panel-title">
-        <button class="lab-panel__close" data-lab-close aria-label="Cerrar modal">✕</button>
-        <div class="card__media" data-lab-media style="height: 190px; margin-top: 0.5rem;"></div>
-        <div class="lab-panel__body">
-            <p class="kicker" data-lab-kicker></p>
-            <h2 id="lab-panel-title" data-lab-title></h2>
-            <div data-lab-state></div>
-            <p class="lab-panel__intro" data-lab-intro style="color: var(--muted); line-height: 1.6;"></p>
-            
-            <div class="lab-panel__facts">
+        <button class="lab-panel__close" data-lab-close aria-label="Cerrar">✕</button>
+        <div class="lab-panel__main">
+            <div class="card__media lab-panel__media">
+                <div class="card__status-wrap" data-lab-status></div>
+                <div class="lab-panel__art" data-lab-media></div>
+            </div>
+            <div class="card__discipline-badge" data-lab-badge></div>
+            <h2 class="lab-panel__title" id="lab-panel-title" data-lab-title></h2>
+            <p class="lab-panel__meta" data-lab-kicker></p>
+            <p class="lab-panel__intro" data-lab-intro></p>
+        </div>
+        <div class="lab-panel__side">
+            <div>
+                <span class="lab-panel__label">Elegí tu comisión</span>
+                <div class="card__coms" data-lab-sched></div>
+            </div>
+            <div class="lab-panel__req" data-lab-req>
+                <span class="lab-panel__req-icon" aria-hidden="true" data-lab-req-icon></span>
                 <div>
-                    <span class="info__label">Comisiones (días y horario)</span>
-                    <div class="info__value" data-lab-sched></div>
-                </div>
-                <div>
-                    <span class="info__label">Participantes</span>
-                    <div class="info__value" data-lab-capacidad></div>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <span class="info__label">Requisitos previos</span>
-                    <div class="info__value" data-lab-requisito></div>
+                    <span class="lab-panel__label">Requisitos</span>
+                    <p data-lab-requisito></p>
                 </div>
             </div>
-
-            <a href="inscripcion.html" class="btn btn--green btn--lg" data-lab-signup style="width: 100%; margin-top: 0.5rem;">
-                Inscribite
-            </a>
+            <a class="btn card__btn is-disabled" aria-disabled="true" data-lab-signup>Elegí una comisión para inscribirte</a>
         </div>
     </dialog>
 
@@ -238,9 +236,9 @@
     </footer>
 
     <!-- SCRIPTS -->
-    <script src="config.js"></script>
-    <script src="data_de_labs.js"></script>
-    <script src="script.js"></script>
+    <script src="config.js?v=20261126"></script>
+    <script src="data_de_labs.js?v=20261126"></script>
+    <script src="script.js?v=20261126"></script>
 
 </body>
 </html>

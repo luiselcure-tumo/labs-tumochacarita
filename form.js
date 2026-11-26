@@ -73,17 +73,18 @@ async function initForm() {
             return showErrorMessage("El taller seleccionado no existe o no está disponible en la cartelera.");
         }
 
+        selectedComision = resolveComision(selectedLab, params.get("comision"));
+        if (!selectedComision) {
+            // The comision is chosen in the lab detail on the cartelera.
+            location.replace(changeComisionUrl(selectedLab));
+            return;
+        }
+
         fillChosenDetails();
-        openConfirmPopCard();
+        showView("form");
 
         remoteCounts = await countsRequest;
         countsPending = false;
-        if (!isComisionAvailable(selectedComision, remoteCounts)) {
-            selectedComision = selectedLab.comisiones.find(c => isComisionAvailable(c, remoteCounts)) || selectedComision;
-        }
-        renderComisionOptions();
-        updatePopCardAvailability();
-        updateComisionDisplay();
         updateFormAvailability();
     } catch (err) {
         console.error(err);
@@ -91,20 +92,32 @@ async function initForm() {
     }
 }
 
+function resolveComision(lab, requestedId) {
+    const requested = lab.comisiones.find(c => c.id === requestedId);
+    if (requested) return requested;
+    return lab.comisiones.length === 1 ? lab.comisiones[0] : null;
+}
+
+function changeComisionUrl(lab) {
+    return `index.html#lab=${encodeURIComponent(lab.id)}`;
+}
+
 function fillChosenDetails() {
     const lab = selectedLab;
     document.title = `${lab.titulo} · Solicitar vacante · TUMO Chacarita`;
+    form.classList.add(`card--${lab.disciplinaMeta.slug}`);
     $("[data-chosen-name]").textContent = lab.titulo;
-    $("[data-chosen-disciplina]").textContent = lab.disciplinaMeta.label || lab.disciplina;
+    const meta = lab.disciplinaMeta;
+    const icon = meta.icon ? `<img src="${escapeHtml(meta.icon)}" alt="" aria-hidden="true">` : "";
+    $("[data-chosen-badge]").innerHTML = `${icon}<span>${escapeHtml(meta.label || lab.disciplina)}</span>`;
     $("[data-chosen-duracion]").textContent = lab.horas;
+    $("[data-chosen-req]").classList.toggle("is-required", lab.tieneRequisito);
+    $("[data-chosen-req-icon]").textContent = lab.tieneRequisito ? "!" : "✓";
     $("[data-chosen-requisito]").textContent = lab.tieneRequisito
-        ? `⚠️ ${lab.requisitos}`
-        : "✓ Sin requisitos previos";
+        ? lab.requisitos
+        : "No requiere conocimientos previos";
 
-    const requested = new URLSearchParams(location.search).get("comision");
-    selectedComision = lab.comisiones.find(c => c.id === requested)
-        || lab.comisiones.find(c => isComisionAvailable(c, remoteCounts))
-        || lab.comisiones[0];
+    $$("[data-change-comision]").forEach(a => { a.href = changeComisionUrl(lab); });
     updateFormAvailability();
     updateComisionDisplay();
 }
@@ -137,73 +150,17 @@ function updateFormAvailability() {
 }
 
 function updateComisionDisplay() {
-    $("[data-chosen-horario]").textContent = selectedComision.label;
+    const i = selectedLab.comisiones.indexOf(selectedComision);
+    $("[data-chosen-horario]").innerHTML = `
+        <div class="card__com card__com--${i % 4}">
+            <span class="card__com-num">${i + 1}</span>
+            <span class="card__com-text">
+                ${comisionDaysHtml(selectedComision)}
+                <small>${escapeHtml(selectedComision.horario.replace(/ h$/, "\u00a0h"))}</small>
+            </span>
+        </div>`;
     $("[data-confirm-text]").textContent =
         `Confirmo que quiero solicitar una vacante en ${selectedLab.titulo} y que puedo asistir ${selectedComision.dias.length > 1 ? "a todos los encuentros" : "al encuentro"}: ${selectedComision.label}.`;
-}
-
-function renderComisionOptions() {
-    const timesWrap = $("[data-confirm-times]");
-    if (!timesWrap) return;
-    timesWrap.innerHTML = selectedLab.comisiones.map(c => {
-        const vacantes = getComisionVacantes(c, remoteCounts);
-        const disponible = countsPending || vacantes > 0;
-        const spots = countsPending ? "Consultando…" : (disponible ? vacantes + " vacantes" : "Cupo lleno");
-        return `
-        <button type="button" class="time-opt ${disponible ? "" : "is-full"}" role="radio"
-            data-comision="${escapeHtml(c.id)}" aria-checked="${c.id === selectedComision.id ? "true" : "false"}"
-            ${disponible ? "" : "disabled"}>
-            ${CLOCK_ICON}
-            <span>${escapeHtml(c.label)}</span>
-            <span class="time-opt__spots">${spots}</span>
-        </button>`;
-    }).join("");
-}
-
-function openConfirmPopCard() {
-    const dialog = $("[data-confirm]");
-    if (!dialog) {
-        showView("form");
-        return;
-    }
-
-    $("[data-confirm-name]").textContent = selectedLab.titulo;
-    renderComisionOptions();
-    updatePopCardAvailability();
-
-    $("[data-confirm-times]").addEventListener("click", (e) => {
-        const btn = e.target.closest(".time-opt");
-        if (!btn || btn.disabled) return;
-        $$(".time-opt", e.currentTarget).forEach(b => b.setAttribute("aria-checked", "false"));
-        btn.setAttribute("aria-checked", "true");
-        selectedComision = selectedLab.comisiones.find(c => c.id === btn.dataset.comision);
-        updatePopCardAvailability();
-    });
-
-    $("[data-confirm-yes]").addEventListener("click", () => {
-        updateComisionDisplay();
-        updateFormAvailability();
-        dialog.close();
-        showView("form");
-        form.nombre.focus();
-    });
-
-    const closeBtn = $("[data-lab-close]", dialog);
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            location.href = "index.html#actividades";
-        });
-    }
-
-    dialog.showModal();
-}
-
-function updatePopCardAvailability() {
-    const disponible = countsPending || isComisionAvailable(selectedComision, remoteCounts);
-    setFullAlert($("[data-confirm-full]"), !disponible);
-    const yesBtn = $("[data-confirm-yes]");
-    yesBtn.disabled = !disponible;
-    yesBtn.textContent = disponible ? "Sí, continuar" : "No disponible";
 }
 
 function setHint(fieldName, text, isError = false) {

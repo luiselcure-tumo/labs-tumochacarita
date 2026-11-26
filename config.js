@@ -211,6 +211,18 @@ function isAlreadyInscripto(dni, labId) {
     return getLocalInscripciones().some(item => cleanDoc(item.dni) === cleanedDNI && item.labId === labId);
 }
 
+const EVENT_DAYS = ["Lun 14", "Mar 15", "Mié 16", "Jue 17"];
+
+// L M M J strip of the event days with the comision's days highlighted
+function comisionDaysHtml(comision) {
+    const cells = EVENT_DAYS.map(d => {
+        const [dow, num] = d.split(" ");
+        const on = comision.dias.includes(d);
+        return `<span class="com-day${on ? " is-on" : ""}"><small>${escapeHtml(dow[0])}</small><b>${escapeHtml(num)}</b></span>`;
+    }).join("");
+    return `<span class="com-strip" aria-hidden="true">${cells}</span>`;
+}
+
 function formatHoras(horas) {
     return String(horas).replace(".", ",") + " h";
 }

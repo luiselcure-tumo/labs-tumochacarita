@@ -271,15 +271,43 @@ function renderFilters() {
     });
 }
 
-const EVENT_DAYS = ["Lun 14", "Mar 15", "Mié 16", "Jue 17"];
-
-function comisionDaysHtml(comision) {
-    const cells = EVENT_DAYS.map(d => {
-        const [dow, num] = d.split(" ");
-        const on = comision.dias.includes(d);
-        return `<span class="com-day${on ? " is-on" : ""}"><small>${escapeHtml(dow[0])}</small><b>${escapeHtml(num)}</b></span>`;
+// selectable=false: links straight to the form. selectable=true: radio buttons for the detail panel.
+function comisionButtonsHtml(lab, { showVacantes = false, selectable = false, selectedId = null } = {}) {
+    return lab.comisiones.map((c, i) => {
+        const vacantes = getComisionVacantes(c, remoteCounts);
+        const full = !countsPending && vacantes === 0;
+        let extra = "";
+        if (full) extra = " · Cupo lleno";
+        else if (showVacantes && !countsPending) extra = ` · ${vacantes} ${vacantes === 1 ? "vacante" : "vacantes"}`;
+        const inner = `
+            <span class="card__com-num">${i + 1}</span>
+            <span class="card__com-text">
+                ${comisionDaysHtml(c)}
+                <small>${escapeHtml(c.horario.replace(/ h$/, " h"))}${extra}</small>
+            </span>`;
+        if (selectable) {
+            const checked = !full && c.id === selectedId;
+            return `<button type="button" role="radio" class="card__com card__com--${i % 4}${full ? " is-full" : ""}"
+                data-comision="${escapeHtml(c.id)}" aria-checked="${checked}" ${full ? "disabled" : ""}
+                aria-label="Comisión ${i + 1}: ${escapeHtml(c.label)}${full ? ", cupo lleno" : ""}">${inner}</button>`;
+        }
+        return full
+            ? `<span class="card__com card__com--${i % 4} is-full" aria-disabled="true">${inner}</span>`
+            : `<a class="card__com card__com--${i % 4}" href="inscripcion.html?id=${encodeURIComponent(lab.id)}&comision=${encodeURIComponent(c.id)}" aria-label="Inscribirme en la comisión ${i + 1}: ${escapeHtml(c.label)}">${inner}</a>`;
     }).join("");
-    return `<span class="com-strip" aria-hidden="true">${cells}</span>`;
+}
+
+function statusPillHtml(lab) {
+    if (countsPending) return `<span class="card__status-pill state--pending">● Consultando cupos</span>`;
+    return isLabAvailable(lab, remoteCounts)
+        ? `<span class="card__status-pill">● Disponible</span>`
+        : `<span class="card__status-pill state--no-disponible">● No disponible</span>`;
+}
+
+function disciplineBadgeHtml(lab) {
+    const meta = lab.disciplinaMeta;
+    const iconHtml = meta.icon ? `<img src="${escapeHtml(meta.icon)}" alt="" aria-hidden="true">` : "";
+    return `${iconHtml}<span>${escapeHtml(meta.label || lab.disciplina)}</span>`;
 }
 
 // Renderizar tarjetas de la cartelera
@@ -302,55 +330,30 @@ function renderCards() {
         const disponible = isLabAvailable(lab, remoteCounts);
         const meta = lab.disciplinaMeta;
 
-        // Badge de estado en la esquina superior derecha del área de medios
-        const statusBadge = countsPending
-            ? `<span class="card__status-pill state--pending">● Consultando cupos</span>`
-            : disponible
-                ? `<span class="card__status-pill">● Disponible</span>`
-                : `<span class="card__status-pill state--no-disponible">● No disponible</span>`;
-
         // The form re-checks availability, so the link stays enabled while counts load
         const signupBtn = (countsPending || disponible)
-            ? `<a href="inscripcion.html?id=${encodeURIComponent(lab.id)}" class="btn card__btn">Inscribite</a>`
+            ? `<button type="button" class="btn card__btn" aria-haspopup="dialog">Inscribite</button>`
             : `<button type="button" class="btn card__btn is-disabled" disabled aria-disabled="true">No disponible (Cupo lleno)</button>`;
 
-        // Animación individual única (1 de 33)
-        const artHtml = getLabAnimation(lab);
-        const iconHtml = meta.icon ? `<img src="${escapeHtml(meta.icon)}" alt="" aria-hidden="true">` : "";
-
-        const timesHtml = lab.comisiones.map((c, i) => {
-            const full = !countsPending && !isComisionAvailable(c, remoteCounts);
-            const inner = `
-                <span class="card__com-num">${i + 1}</span>
-                <span class="card__com-text">
-                    ${comisionDaysHtml(c)}
-                    <small>${escapeHtml(c.horario.replace(/ h$/, " h"))}${full ? " · Cupo lleno" : ""}</small>
-                </span>`;
-            return full
-                ? `<span class="card__com card__com--${i % 4} is-full" aria-disabled="true">${inner}</span>`
-                : `<a class="card__com card__com--${i % 4}" href="inscripcion.html?id=${encodeURIComponent(lab.id)}&comision=${encodeURIComponent(c.id)}" aria-label="Inscribirme en la comisión ${i + 1}: ${escapeHtml(c.label)}">${inner}</a>`;
-        }).join("");
+        const classes = ["card", `card--${meta.slug}`];
+        if (!countsPending && !disponible) classes.push("is-closed");
+        if (lab.id === openPanelId) classes.push("is-origin");
 
         return `
-            <article class="card card--${escapeHtml(meta.slug)} ${countsPending || disponible ? '' : 'is-closed'}" data-lab-id="${escapeHtml(lab.id)}">
-                <!-- Área de ilustración visual con estado en esquina superior derecha -->
+            <article class="${escapeHtml(classes.join(" "))}" data-lab-id="${escapeHtml(lab.id)}">
                 <div class="card__media">
-                    <div class="card__status-wrap">${statusBadge}</div>
-                    ${artHtml}
+                    <div class="card__status-wrap">${statusPillHtml(lab)}</div>
+                    ${getLabAnimation(lab)}
                 </div>
 
-                <!-- Tag de disciplina ubicado debajo del área visual (sin superposición) -->
-                <div class="card__discipline-badge">
-                    ${iconHtml}
-                    <span>${escapeHtml(meta.label || lab.disciplina)}</span>
-                </div>
-                
+                <div class="card__discipline-badge">${disciplineBadgeHtml(lab)}</div>
+
                 <h3 class="card__title">
                     <button class="card__open" data-open-lab="${escapeHtml(lab.id)}" aria-haspopup="dialog">${escapeHtml(lab.titulo)}</button>
                 </h3>
-                
+
                 <div class="card__coms">
-                    ${timesHtml}
+                    ${comisionButtonsHtml(lab)}
                 </div>
 
                 ${signupBtn}
@@ -358,76 +361,183 @@ function renderCards() {
         `;
     }).join("");
 
-    // Eventos de clic en tarjeta para abrir modal de detalle
     $$(".card", wrap).forEach(card => {
         const id = card.dataset.labId;
         card.addEventListener("click", (e) => {
-            if (!e.target.closest(".card__btn, .card__com")) {
-                openPanel(id);
-            }
+            if (e.target.closest(".card__com, .card__btn:disabled")) return;
+            openPanel(id);
         });
     });
+}
+
+// ---------- Lab detail: the clicked card expands into a dialog ----------
+let panelScrollY = 0;
+let panelComisionId = null;
+let panelClosing = false;
+
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function findCard(id) {
+    return id ? $(`.card[data-lab-id="${CSS.escape(id)}"]`) : null;
+}
+
+// Transform that maps the panel's box onto the card's box.
+function cardTransform(panel, card) {
+    const from = card.getBoundingClientRect();
+    const to = panel.getBoundingClientRect();
+    if (!from.width || !to.width) return null;
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    return `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+}
+
+function animatePanel(panel, card, direction) {
+    const start = card && !reducedMotion() ? cardTransform(panel, card) : null;
+    if (!start) return Promise.resolve();
+
+    const opening = direction === "open";
+    const timing = { duration: opening ? 420 : 320, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)", fill: "both" };
+    const box = [
+        { transform: start, transformOrigin: "top left" },
+        { transform: "none", transformOrigin: "top left" }
+    ];
+    const content = [{ opacity: 0 }, { opacity: 0, offset: 0.35 }, { opacity: 1 }];
+    const backdrop = [{ opacity: 0 }, { opacity: 1 }];
+
+    const animations = [panel.animate(opening ? box : [...box].reverse(), timing)];
+    $$(":scope > *", panel).forEach(el => {
+        animations.push(el.animate(opening ? content : [...content].reverse(), timing));
+    });
+    try {
+        animations.push(panel.animate(opening ? backdrop : [...backdrop].reverse(), { ...timing, pseudoElement: "::backdrop" }));
+    } catch {
+        // ::backdrop animation is not supported everywhere; the box animation still runs.
+    }
+    // Background tabs may never advance animation frames, so cap the wait.
+    const done = Promise.all(animations.map(a => a.finished.catch(() => {})));
+    const cap = new Promise(resolve => setTimeout(resolve, timing.duration + 150));
+    return Promise.race([done, cap]).then(() => animations);
+}
+
+function fillPanel(lab) {
+    const panel = $("[data-lab-panel]");
+    const disponible = isLabAvailable(lab, remoteCounts);
+
+    panel.className = `lab-panel card--${lab.disciplinaMeta.slug}${!countsPending && !disponible ? " is-closed" : ""}`;
+    $("[data-lab-status]").innerHTML = statusPillHtml(lab);
+    $("[data-lab-media]").innerHTML = getLabAnimation(lab);
+    $("[data-lab-badge]").innerHTML = disciplineBadgeHtml(lab);
+    $("[data-lab-title]").textContent = lab.titulo;
+    $("[data-lab-kicker]").textContent = lab.horas;
+    $("[data-lab-intro]").textContent = lab.descripcion;
+    const available = lab.comisiones.filter(c => countsPending || isComisionAvailable(c, remoteCounts));
+    if (!available.some(c => c.id === panelComisionId)) panelComisionId = null;
+    if (!panelComisionId && lab.comisiones.length === 1 && available.length === 1) panelComisionId = available[0].id;
+    $("[data-lab-sched]").innerHTML = comisionButtonsHtml(lab, { showVacantes: true, selectable: true, selectedId: panelComisionId });
+    $("[data-lab-req]").classList.toggle("is-required", lab.tieneRequisito);
+    $("[data-lab-req-icon]").textContent = lab.tieneRequisito ? "!" : "✓";
+    $("[data-lab-requisito]").textContent = lab.tieneRequisito
+        ? lab.requisitos
+        : "No requiere conocimientos previos";
+
+    updatePanelSignup(lab);
+}
+
+function updatePanelSignup(lab) {
+    const cta = $("[data-lab-signup]");
+    const disponible = countsPending || isLabAvailable(lab, remoteCounts);
+    let text = "Inscribite";
+    if (!disponible) text = "No disponible (Cupo lleno)";
+    else if (!panelComisionId) text = "Elegí una comisión para inscribirte";
+
+    if (disponible && panelComisionId) {
+        cta.href = `inscripcion.html?id=${encodeURIComponent(lab.id)}&comision=${encodeURIComponent(panelComisionId)}`;
+        cta.classList.remove("is-disabled");
+        cta.removeAttribute("aria-disabled");
+    } else {
+        cta.removeAttribute("href");
+        cta.classList.add("is-disabled");
+        cta.setAttribute("aria-disabled", "true");
+    }
+    cta.textContent = text;
+}
+
+const FIT_LEVELS = ["fit-1", "fit-2", "fit-3", "fit-4", "fit-5"];
+
+// Adds compact levels one by one until the open panel fits the viewport without scrolling.
+function fitPanel(panel) {
+    panel.classList.remove(...FIT_LEVELS, "is-overflowing");
+    const fits = () => panel.scrollHeight <= panel.clientHeight + 1;
+    for (const level of FIT_LEVELS) {
+        if (fits()) return;
+        panel.classList.add(level);
+    }
+    if (!fits()) panel.classList.add("is-overflowing");
 }
 
 // Modal de detalle del taller
 function openPanel(id) {
     const lab = allLabs.find(l => l.id === id);
-    if (!lab) return;
-
     const panel = $("[data-lab-panel]");
-    if (!panel) return;
+    if (!lab || !panel) return;
 
-    const disponible = isLabAvailable(lab, remoteCounts);
-    const libres = getLabVacantes(lab, remoteCounts);
-
-    $("[data-lab-media]").innerHTML = getLabAnimation(lab);
-    $("[data-lab-kicker]").textContent = `${lab.disciplina} · ${lab.horas}`;
-    $("[data-lab-title]").textContent = lab.titulo;
-    
-    $("[data-lab-state]").innerHTML = countsPending
-        ? `<span class="state state--pending">Consultando cupos…</span>`
-        : disponible
-        ? `<span class="state state--disponible">Disponible · ${libres} vacantes libres</span>`
-        : `<span class="state state--no-disponible">No disponible · Cupo máximo alcanzado</span>`;
-
-    $("[data-lab-intro]").textContent = lab.descripcion;
-    $("[data-lab-sched]").innerHTML = lab.comisiones.map(c => {
-        if (countsPending) return `<p><strong>${escapeHtml(c.label)}</strong></p>`;
-        const vacantes = getComisionVacantes(c, remoteCounts);
-        return `<p><strong>${escapeHtml(c.label)}</strong> · ${vacantes > 0 ? `${vacantes} vacantes` : "Cupo lleno"}</p>`;
-    }).join("");
-    $("[data-lab-capacidad]").textContent = `Cupo por comisión: ${lab.maxParticipantes} · Mínimo para abrir: ${lab.minParticipantes}`;
-    
-    $("[data-lab-requisito]").innerHTML = lab.tieneRequisito
-        ? `<p style="color: #b26a00; font-weight: 700;">⚠️ ${escapeHtml(lab.requisitos)}</p>`
-        : `<p style="color: var(--green-dark); font-weight: 700;">✓ No requiere conocimientos previos</p>`;
-
-    const cta = $("[data-lab-signup]");
-    if (cta) {
-        if (countsPending || disponible) {
-            cta.href = `inscripcion.html?id=${encodeURIComponent(lab.id)}`;
-            cta.textContent = "Inscribite";
-            cta.classList.remove("is-disabled");
-            cta.removeAttribute("disabled");
-        } else {
-            cta.removeAttribute("href");
-            cta.textContent = "No disponible (Cupo lleno)";
-            cta.classList.add("is-disabled");
-        }
+    if (!panel.open && openPanelId !== id) panelComisionId = null;
+    fillPanel(lab);
+    if (panel.open) {
+        fitPanel(panel);
+        return;
     }
 
     openPanelId = id;
-    if (!panel.open) panel.showModal();
+    panelScrollY = window.scrollY;
+    const card = findCard(id);
+    panel.showModal();
+    fitPanel(panel);
+    animatePanel(panel, card, "open").then(anims => (anims || []).forEach(a => a.cancel()));
+    if (card) card.classList.add("is-origin");
+}
+
+async function closePanel() {
+    const panel = $("[data-lab-panel]");
+    if (!panel || !panel.open || panelClosing) return;
+    panelClosing = true;
+    const card = findCard(openPanelId);
+    await animatePanel(panel, card, "close");
+    panel.close();
 }
 
 function initPanel() {
     const panel = $("[data-lab-panel]");
     if (!panel) return;
-    const closeBtn = $("[data-lab-close]");
-    if (closeBtn) closeBtn.addEventListener("click", () => panel.close());
-    panel.addEventListener("close", () => { openPanelId = null; });
+    const closeBtn = $("[data-lab-close]", panel);
+    if (closeBtn) closeBtn.addEventListener("click", closePanel);
+    window.addEventListener("resize", () => {
+        if (panel.open) fitPanel(panel);
+    });
+    $("[data-lab-sched]", panel).addEventListener("click", (e) => {
+        const btn = e.target.closest(".card__com[role=radio]");
+        if (!btn || btn.disabled) return;
+        panelComisionId = btn.dataset.comision;
+        $$(".card__com[role=radio]", panel).forEach(b => b.setAttribute("aria-checked", String(b === btn)));
+        const lab = allLabs.find(l => l.id === openPanelId);
+        if (lab) updatePanelSignup(lab);
+    });
+    panel.addEventListener("cancel", (e) => {
+        e.preventDefault();
+        closePanel();
+    });
     panel.addEventListener("click", (e) => {
-        if (e.target === panel) panel.close();
+        if (e.target !== panel) return;
+        const r = panel.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if (!inside) closePanel();
+    });
+    panel.addEventListener("close", () => {
+        $$(".card.is-origin").forEach(c => c.classList.remove("is-origin"));
+        panel.getAnimations({ subtree: true }).forEach(a => a.cancel());
+        openPanelId = null;
+        panelClosing = false;
+        if (window.scrollY !== panelScrollY) window.scrollTo({ top: panelScrollY, behavior: "instant" });
     });
 }
 
@@ -500,6 +610,17 @@ async function getRawLabs() {
 }
 
 // Carga principal de datos
+// index.html#lab=<id> opens that lab's detail (the form links here to change comision).
+function openPanelFromHash() {
+    const match = location.hash.match(/^#lab=(.+)$/);
+    if (!match) return;
+    const id = decodeURIComponent(match[1]);
+    history.replaceState(null, "", location.pathname + location.search + "#actividades");
+    const card = findCard(id);
+    if (card) card.scrollIntoView({ block: "center", behavior: "instant" });
+    openPanel(id);
+}
+
 async function initCartelera() {
     initPanel();
     initStatusChecker();
@@ -523,6 +644,7 @@ async function initCartelera() {
 
         renderFilters();
         renderCards();
+        openPanelFromHash();
 
         remoteCounts = await countsRequest;
         countsPending = false;

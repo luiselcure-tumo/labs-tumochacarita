@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="style.css">
-    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css?v=20261126">
+    <script src="theme.js?v=20261126"></script>
 </head>
 <body class="page-form">
 
@@ -53,31 +53,36 @@
         <form class="signup" data-view="form" data-signup novalidate hidden>
 
             <!-- BLOQUE 1: RESUMEN DEL TALLER ELEGIDO -->
-            <section class="signup__block chosen" data-chosen>
-                <div class="chosen__head">
-                    <p class="chosen__label">Estás solicitando vacante en</p>
-                    <a href="index.html#actividades" class="chosen__change">Cambiar taller</a>
+            <section class="chosen-card" data-chosen>
+                <div class="chosen-card__head">
+                    <span class="lab-panel__label">Estás solicitando vacante en</span>
+                    <a href="index.html#actividades" class="chosen-card__link">Cambiar taller</a>
                 </div>
-                <h2 data-chosen-name></h2>
-                <div class="chosen__pills">
-                    <span class="tag" data-chosen-disciplina></span>
-                    <span class="tag" data-chosen-duracion></span>
-                    <span class="tag" data-chosen-cupos></span>
+                <div class="card__discipline-badge" data-chosen-badge></div>
+                <h2 class="chosen-card__title" data-chosen-name></h2>
+                <div class="chosen-card__pills">
+                    <span data-chosen-duracion></span>
+                    <span data-chosen-cupos></span>
                 </div>
 
-                <!-- ALERTA SI EL TALLER ESTÁ LLENO (NO DISPONIBLE) -->
                 <div class="alert-full" data-chosen-full hidden>
-                    ⚠️ Este taller ya alcanzó el cupo máximo de participantes y <strong>no está disponible</strong>. No es posible enviar nuevas solicitudes.
+                    ⚠️ Esta comisión ya alcanzó el cupo máximo de participantes. <a href="index.html#actividades" data-change-comision>Elegí otra comisión</a>.
                 </div>
 
-                <div class="field" style="margin-top: 1rem;">
-                    <span>Comisión seleccionada</span>
-                    <div class="field" style="font-weight: 700; color: var(--green-dark); background: #f0f8ef; padding: 0.8rem 1.2rem; border-radius: 12px;" data-chosen-horario></div>
+                <div>
+                    <div class="chosen-card__head">
+                        <span class="lab-panel__label">Tu comisión</span>
+                        <a href="index.html#actividades" class="chosen-card__link" data-change-comision>Cambiar comisión</a>
+                    </div>
+                    <div data-chosen-horario></div>
                 </div>
 
-                <div style="margin-top: 1rem; font-size: 0.95rem;">
-                    <span class="info__label">Requisitos</span>
-                    <div data-chosen-requisito style="font-weight: 600;"></div>
+                <div class="lab-panel__req" data-chosen-req>
+                    <span class="lab-panel__req-icon" aria-hidden="true" data-chosen-req-icon></span>
+                    <div>
+                        <span class="lab-panel__label">Requisitos</span>
+                        <p data-chosen-requisito></p>
+                    </div>
                 </div>
             </section>
 
@@ -100,7 +105,7 @@
                     <label class="field" data-field="correo">
                         <span>Correo electrónico (de TUMO) *</span>
                         <input name="correo" type="email" required autocomplete="email" placeholder="estudiante@tumo.world">
-                        <span class="field__hint" data-hint="correo">Ingresá tu correo institucional @tumo.world o @tumo.ar.</span>
+                        <span class="field__hint" data-hint="correo">Ingresá tu correo institucional @tumo.world.</span>
                     </label>
                 </div>
             </fieldset>
@@ -117,7 +122,7 @@
 
             <!-- BOTÓN DE ENVÍO -->
             <div class="signup__submit">
-                <button type="submit" class="btn btn--green btn--lg" data-submit>Enviar solicitud</button>
+                <button type="submit" class="btn btn--lg signup__send" data-submit>Enviar solicitud</button>
                 <p class="signup__msg" data-form-msg aria-live="polite"></p>
             </div>
         </form>
@@ -143,32 +148,6 @@
 
     </main>
 
-    <!-- POP CARD NATIVO (<dialog>) PARA CONFIRMAR HORARIO O VOLVER A LA CARTELERA -->
-    <dialog class="confirm" data-confirm aria-labelledby="confirm-title">
-        <button class="confirm__close" data-lab-close aria-label="Cerrar y volver a la cartelera">✕</button>
-        <p class="kicker">Confirmá tu elección</p>
-        <h2 id="confirm-title" style="margin-bottom: 1rem;">¿Querés solicitar vacante en <span data-confirm-name style="color: var(--green-dark);"></span>?</h2>
-        
-        <div class="alert-full" data-confirm-full hidden>
-            ⚠️ <strong>Taller no disponible:</strong> Este taller ya ha alcanzado el límite de participantes máximos.
-        </div>
-
-        <div style="margin: 1.2rem 0; text-align: left;">
-            <p class="info__label" id="confirm-times-label">Elegí tu comisión (días y horario):</p>
-            <div class="confirm__times" data-confirm-times role="radiogroup" aria-labelledby="confirm-times-label">
-                <!-- Se inyectan las opciones de horario dinámicamente -->
-            </div>
-        </div>
-
-        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1.5rem;">
-            Recordá que cada estudiante puede inscribirse en hasta <strong>dos Flash Labs distintos</strong>.
-        </p>
-
-        <div class="confirm__actions">
-            <button type="button" class="btn btn--green" data-confirm-yes disabled>Sí, continuar</button>
-            <a href="index.html#actividades" class="btn btn--ghost">Volver a la cartelera</a>
-        </div>
-    </dialog>
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -181,9 +160,9 @@
     </footer>
 
     <!-- SCRIPTS -->
-    <script src="config.js"></script>
-    <script src="data_de_labs.js"></script>
-    <script src="form.js"></script>
+    <script src="config.js?v=20261126"></script>
+    <script src="data_de_labs.js?v=20261126"></script>
+    <script src="form.js?v=20261126"></script>
 
 </body>
 </html>
