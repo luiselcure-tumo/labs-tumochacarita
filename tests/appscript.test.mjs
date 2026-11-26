@@ -73,7 +73,7 @@ function setup({ inscriptos = [], padronAvailable = true } = {}) {
 const base = { nombre: "Estudiante Prueba", correo: "estudiante@tumo.world" };
 const FOTO = "tu-celular-tu-camara-profesional-1";
 const LETTERING = "taller-de-lettering-1";
-const SNACK = "tu-propio-snack-box-asiatico-1";
+const PORTADAS = "ilustradores-de-portadas-1";
 
 test("should fail closed and write nothing when the padron cannot be read", () => {
   const { post, sheet } = setup({ padronAvailable: false });
@@ -147,10 +147,17 @@ test("should accept when the student completed level II of the workshop", () => 
   assert.equal(post({ ...base, dni: "40333333", comisionId: "samples-1" }).status, "ok");
 });
 
-test("should accept Drawing I or Photography I when enrolling in Snack Box", () => {
+test("should accept only Drawing I when enrolling in Ilustradores de portadas", () => {
+  // Arrange
   const { post } = setup();
-  assert.equal(post({ ...base, dni: "40111111", comisionId: SNACK }).status, "ok");
-  assert.equal(post({ ...base, dni: "40222222", comisionId: SNACK }).status, "ok");
+
+  // Act
+  const conDibujo = post({ ...base, dni: "40222222", comisionId: PORTADAS });
+  const conFoto = post({ ...base, dni: "40111111", comisionId: PORTADAS });
+
+  // Assert
+  assert.equal(conDibujo.status, "ok");
+  assert.equal(conFoto.status, "requisito_no_cumplido");
 });
 
 test("should reject when the student already has another comision of the same lab", () => {

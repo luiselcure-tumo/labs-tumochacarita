@@ -33,7 +33,7 @@ const ANIM_BY_LAB = {
     "crea-tu-propio-juego-de-mesa": 17,
     "arma-tu-cv-web": 18,
     "adivinanza-de-palabras": 19,
-    "tu-propio-snack-box-asiatico": 24,
+    "ilustradores-de-portadas": 27,
     "taller-de-lettering": 26,
     "laboratorio-de-historieta": 28,
     "movimiento-infinito": 29,
@@ -184,12 +184,12 @@ function getWorkshopAnimation(idx) {
             return `<div class="anim-lab anim-lab--27">
                 <div class="book-cover-3d"><div class="book-front-cover">📘</div><div class="book-magic">✨</div></div>
             </div>`;
-        // 28. Dibujo: Laboratorio de historieta
+        // 28. Dibujo: Taller de historieta
         case 27:
             return `<div class="anim-lab anim-lab--28">
                 <div class="comic-strip"><div class="panel p1"></div><div class="panel p2"><span class="pow-tag">POW!</span></div></div>
             </div>`;
-        // 29. Dibujo: Movimiento infinito: laboratorio de GIF animado
+        // 29. Dibujo: Acercamiento a la animación: taller de loop animado
         case 28:
             return `<div class="anim-lab anim-lab--29">
                 <div class="gif-rotator"><span class="runner-char">🏃</span><div class="spin-arrows">🔄</div></div>

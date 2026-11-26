@@ -41,7 +41,7 @@ EXPECTED = {
     "crea-tu-propio-juego-de-mesa": (18, 4, [], [([L, X], "13 a 15 h")]),
     "arma-tu-cv-web": (18, 1, [], [([M], "9 a 13 h"), ([X], "15 a 19 h")]),
     "adivinanza-de-palabras": (18, 1, ["programming"], [([L, X, J], "9 a 13 h"), ([L, M, J], "15 a 19 h")]),
-    "tu-propio-snack-box-asiatico": (18, 1, ["drawing", "photography"], [([L, J], "9 a 12 h")]),
+    "ilustradores-de-portadas": (18, 1, ["drawing"], [([L, J], "9 a 12 h")]),
     "taller-de-lettering": (18, 1, [], [([M, X], "9 a 12 h")]),
     "laboratorio-de-historieta": (18, 1, ["drawing"], [([L, X], "13 a 16 h")]),
     "movimiento-infinito": (18, 1, ["drawing"], [([M, J], "16 a 19 h")]),

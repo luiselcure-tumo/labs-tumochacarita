@@ -611,24 +611,23 @@
     ]
   },
   {
-    "id": "tu-propio-snack-box-asiatico",
-    "titulo": "Tu propio Snack Box asiático",
+    "id": "ilustradores-de-portadas",
+    "titulo": "Ilustradores de portadas: taller de ilustración editorial para libros",
     "disciplina": "Dibujo",
-    "descripcion": "Creamos el empaque de tu propia golosina al estilo Tokio. Para los fans de la cultura oriental, y los que no también. Vamos a aprender a diseñar, ilustrar y armar el envoltorio de un snack asiático ficticio totalmente creado por vos. (pense en que tenga temática oriental porqje vengo viendo que el 90% de los chicos que se anotan a dibujo son fan del anime el manga y la cultura oriental en general, entonces propongo esa temática para que les atraiga la idea",
+    "descripcion": "Diseñamos e ilustramos la portada de un libro, desde la idea hasta la pieza final.",
     "encuentros": 2,
     "horasTotales": 6,
     "minParticipantes": 1,
     "maxParticipantes": 18,
     "requisito": {
-      "texto": "Dibujo I o Foto I completado",
+      "texto": "Dibujo I completado",
       "workshops": [
-        "drawing",
-        "photography"
+        "drawing"
       ]
     },
     "comisiones": [
       {
-        "id": "tu-propio-snack-box-asiatico-1",
+        "id": "ilustradores-de-portadas-1",
         "dias": [
           "Lun 14",
           "Jue 17"
@@ -663,7 +662,7 @@
   },
   {
     "id": "laboratorio-de-historieta",
-    "titulo": "Laboratorio de historieta: ¡Tu personaje tiene una historia para contar!",
+    "titulo": "Taller de historieta: ¡Tu personaje tiene una historia para contar!",
     "disciplina": "Dibujo",
     "descripcion": "Cada participante creará en Photoshop una historieta de cuatro viñetas con temática \"la amistad\", protagonizada por el personaje que diseñó en Dibujo de Nivel 1",
     "encuentros": 2,
@@ -689,7 +688,7 @@
   },
   {
     "id": "movimiento-infinito",
-    "titulo": "Movimiento infinito: laboratorio de GIF animado",
+    "titulo": "Acercamiento a la animación: taller de loop animado",
     "disciplina": "Dibujo",
     "descripcion": "Un primer acercamiento a la animación a través de Photoshop: cada participante dibujará y animará, fotograma a fotograma, un animal u objeto asignado al azar para crear un GIF en loop de hasta 7 segundos",
     "encuentros": 2,

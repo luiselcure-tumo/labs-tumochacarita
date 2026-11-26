@@ -436,18 +436,17 @@ var CATALOGO = {
     ],
     "requisitoTexto": "Programación I completado"
   },
-  "tu-propio-snack-box-asiatico-1": {
-    "labId": "tu-propio-snack-box-asiatico",
-    "taller": "Tu propio Snack Box asiático",
+  "ilustradores-de-portadas-1": {
+    "labId": "ilustradores-de-portadas",
+    "taller": "Ilustradores de portadas: taller de ilustración editorial para libros",
     "disciplina": "Dibujo",
     "dias": "Lun 14 y Jue 17",
     "horario": "9 a 12 h",
     "cupo": 18,
     "requisitos": [
-      "drawing",
-      "photography"
+      "drawing"
     ],
-    "requisitoTexto": "Dibujo I o Foto I completado"
+    "requisitoTexto": "Dibujo I completado"
   },
   "taller-de-lettering-1": {
     "labId": "taller-de-lettering",
@@ -461,7 +460,7 @@ var CATALOGO = {
   },
   "laboratorio-de-historieta-1": {
     "labId": "laboratorio-de-historieta",
-    "taller": "Laboratorio de historieta: ¡Tu personaje tiene una historia para contar!",
+    "taller": "Taller de historieta: ¡Tu personaje tiene una historia para contar!",
     "disciplina": "Dibujo",
     "dias": "Lun 14 y Mié 16",
     "horario": "13 a 16 h",
@@ -473,7 +472,7 @@ var CATALOGO = {
   },
   "movimiento-infinito-1": {
     "labId": "movimiento-infinito",
-    "taller": "Movimiento infinito: laboratorio de GIF animado",
+    "taller": "Acercamiento a la animación: taller de loop animado",
     "disciplina": "Dibujo",
     "dias": "Mar 15 y Jue 17",
     "horario": "16 a 19 h",
