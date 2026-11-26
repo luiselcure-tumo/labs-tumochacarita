@@ -275,6 +275,14 @@ h3 { font-size: 1.25rem; font-weight: 800; }
     overflow: hidden;
     position: relative;
 }
+.hero__preview-art--photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 40%;
+}
 .hero__preview-title {
     font-size: 1.35rem;
     font-weight: 800;
@@ -590,59 +598,108 @@ h3 { font-size: 1.25rem; font-weight: 800; }
     padding: 0;
 }
 
-/* Horarios en píldoras blancas sólidas */
-.card__times {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.8rem;
-}
-.card__time-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    background: #ffffff;
-    color: #111111;
-    font: 800 0.8rem var(--font);
-    padding: 0.4em 0.85em;
-    border-radius: var(--radius);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
 .icon-clock {
     width: 14px;
     height: 14px;
 }
 
-/* Días de cursada en fichas de calendario (JUE 10, VIE 11...) */
-.card__days {
-    display: flex;
-    gap: 0.4rem;
-    margin-bottom: 1.2rem;
+/* Comisiones: one button per comision, tinted from the discipline color */
+.card__coms {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
-.card__day {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.22);
-    border-radius: 12px;
-    padding: 0.35rem 0.2rem;
-    text-align: center;
+.card__com {
+    --com-mix: 18%;
+    --com-bg: color-mix(in srgb, var(--card-bg) var(--com-mix), #ffffff);
+    --com-ink: color-mix(in srgb, var(--card-bg) 35%, #000000);
+    --com-num: var(--card-border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 56px;
+    padding: 0.6rem 0.9rem 0.6rem 0.6rem;
+    border-radius: 16px;
+    background: var(--com-bg);
+    color: var(--com-ink);
+    text-decoration: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card__com--1 { --com-mix: 42%; }
+.card__com--2 { --com-mix: 65%; --com-ink: color-mix(in srgb, var(--card-bg) 12%, #000000); }
+.card__com--3 {
+    --com-bg: color-mix(in srgb, var(--card-bg) 70%, #000000);
+    --com-ink: #ffffff;
+    --com-num: color-mix(in srgb, var(--card-bg) 30%, #ffffff);
+    --com-num-ink: var(--com-bg);
+}
+a.card__com:hover,
+a.card__com:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+a.card__com:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+}
+.card__com-num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--com-num);
+    color: var(--com-num-ink, #ffffff);
+    font: 900 1rem var(--font);
+}
+.card__com-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+.card__com-text {
+    gap: 0.3rem;
+}
+.card__com-text small {
+    font: 800 0.9rem var(--font);
+    opacity: 0.9;
+}
+
+/* Days as a fixed L M M J strip of the 4 event days */
+.com-strip {
+    display: flex;
+    gap: 4px;
+}
+.com-day {
     display: flex;
     flex-direction: column;
     align-items: center;
-    backdrop-filter: blur(4px);
+    width: 34px;
+    padding: 2px 0;
+    border-radius: 8px;
+    border: 2px dashed color-mix(in srgb, currentColor 30%, transparent);
+    line-height: 1.05;
+    opacity: 0.55;
 }
-.card--videojuegos .card__day {
-    background: rgba(0, 0, 0, 0.14);
-    color: #192703;
+.com-day small {
+    font: 900 0.7rem var(--font);
 }
-.card__day small {
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    opacity: 0.9;
+.com-day b {
+    font: 900 0.85rem var(--font);
 }
-.card__day b {
-    font-size: 1.05rem;
-    font-weight: 900;
+.com-day.is-on {
+    opacity: 1;
+    border: 2px solid var(--com-num);
+    background: var(--com-num);
+    color: var(--com-num-ink, #ffffff);
+}
+.card__com.is-full {
+    filter: grayscale(1);
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* Botón inferior blanco sólido estilo píldora TUMO */
@@ -1097,26 +1154,6 @@ h3 { font-size: 1.25rem; font-weight: 800; }
 .foley-studio { display: flex; align-items: center; gap: 10px; font-size: 2.8rem; animation: foleyPulse 2s infinite ease-in-out; }
 @keyframes foleyPulse { 0%, 100% { transform: scale(0.95); } 50% { transform: scale(1.1); } }
 
-
-/* ---------- Banner CTA ---------- */
-.cta {
-    position: relative;
-    background: var(--green-primary);
-    color: var(--white);
-    padding: clamp(3rem, 7vw, 5rem) var(--gutter);
-    border-radius: 36px;
-    text-align: center;
-    max-width: var(--max);
-    margin: 4rem auto;
-    overflow: hidden;
-}
-.cta h2 { color: var(--white); margin-bottom: 1rem; }
-.cta p {
-    font-size: 1.2rem;
-    max-width: 50ch;
-    margin: 0 auto 2rem;
-    opacity: 0.95;
-}
 
 /* ---------- FAQ ---------- */
 .faq {

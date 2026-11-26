@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
 </head>
@@ -57,15 +58,10 @@
             <!-- Vista destacada en el Hero -->
             <div class="hero__art">
                 <div class="hero__card-preview">
-                    <div class="hero__preview-art">
-                        <div class="art-genai">
-                            <span class="art-genai__sparkle">✦</span>
-                            <div class="art-genai__nodes">
-                                <span class="art-genai__node"></span>
-                                <span class="art-genai__node"></span>
-                                <span class="art-genai__node"></span>
-                            </div>
-                        </div>
+                    <div class="hero__preview-art hero__preview-art--photo">
+                        <img src="img/propuestas-creativas.webp" width="880" height="587"
+                             alt="Estudiantes trabajando en computadoras en un aula de TUMO Chacarita"
+                             fetchpriority="high" decoding="async">
                     </div>
                     <h3 class="hero__preview-title">23 Propuestas Creativas</h3>
                     <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem;">
@@ -127,13 +123,6 @@
             </div>
         </section>
 
-        <!-- BANNER CTA -->
-        <section class="cta" id="inscripcion">
-            <h2>Asegurá tu lugar en TUMO Chacarita</h2>
-            <p>Cada taller tiene un límite de participantes máximos. Elegí tu actividad favorita en la cartelera antes de que se completen las vacantes.</p>
-            <a href="#actividades" class="btn btn--light btn--lg">Explorar la cartelera</a>
-        </section>
-
         <!-- PREGUNTAS FRECUENTES -->
         <section class="section" id="faq">
             <div class="cartelera-header" style="text-align: left; margin: 0 0 2rem;">
@@ -165,7 +154,7 @@
 
                 <details>
                     <summary>¿Quiénes pueden participar?</summary>
-                    <p>Son actividades exclusivas para estudiantes activos de TUMO Chacarita que tengan al menos una disciplina en estado "complete" u "on going".</p>
+                    <p>Cualquier estudiante activo de TUMO Chacarita. Algunos Flash Labs tienen requisitos: los explicamos más abajo.</p>
                 </details>
 
                 <details>
@@ -180,7 +169,7 @@
 
                 <details>
                     <summary>¿Qué datos me piden para inscribirme?</summary>
-                    <p>Tu nombre y apellido, DNI y tu <strong>correo electrónico de TUMO (@tumo.world)</strong>.</p>
+                    <p>Tu nombre y apellido, DNI y tu <strong>correo electrónico de TUMO (@tumo.world o @tumo.ar)</strong>.</p>
                 </details>
 
                 <details>
@@ -200,7 +189,7 @@
 
                 <details>
                     <summary>¿Cómo contacto a la sede?</summary>
-                    <p>Podés escribirnos a <a href="mailto:familias.chacarita@tumo.ar" style="color: var(--green-primary); font-weight: 700;">familias.chacarita@tumo.ar</a> o por WhatsApp al +54 9 11 5134-2592.</p>
+                    <p>Podés escribirnos a <a href="mailto:familias.chacarita@tumo.ar" style="color: var(--green-primary); font-weight: 700;">familias.chacarita@tumo.ar</a> o preguntarle a tu coach.</p>
                 </details>
             </div>
         </section>

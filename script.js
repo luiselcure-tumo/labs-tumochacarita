@@ -271,6 +271,17 @@ function renderFilters() {
     });
 }
 
+const EVENT_DAYS = ["Lun 14", "Mar 15", "Mié 16", "Jue 17"];
+
+function comisionDaysHtml(comision) {
+    const cells = EVENT_DAYS.map(d => {
+        const [dow, num] = d.split(" ");
+        const on = comision.dias.includes(d);
+        return `<span class="com-day${on ? " is-on" : ""}"><small>${escapeHtml(dow[0])}</small><b>${escapeHtml(num)}</b></span>`;
+    }).join("");
+    return `<span class="com-strip" aria-hidden="true">${cells}</span>`;
+}
+
 // Renderizar tarjetas de la cartelera
 function renderCards() {
     const wrap = $("[data-lab-cards]");
@@ -307,12 +318,17 @@ function renderCards() {
         const artHtml = getLabAnimation(lab);
         const iconHtml = meta.icon ? `<img src="${escapeHtml(meta.icon)}" alt="" aria-hidden="true">` : "";
 
-        const timesHtml = lab.comisiones.map(c => `
-            <span class="card__time-pill">${CLOCK_ICON} ${escapeHtml(c.label)}</span>
-        `).join("");
-        const daysHtml = lab.diasDelLab.map(d => {
-            const [dow, num] = d.split(" ");
-            return `<span class="card__day"><small>${escapeHtml(dow.toUpperCase())}</small><b>${escapeHtml(num)}</b></span>`;
+        const timesHtml = lab.comisiones.map((c, i) => {
+            const full = !countsPending && !isComisionAvailable(c, remoteCounts);
+            const inner = `
+                <span class="card__com-num">${i + 1}</span>
+                <span class="card__com-text">
+                    ${comisionDaysHtml(c)}
+                    <small>${escapeHtml(c.horario.replace(/ h$/, " h"))}${full ? " · Cupo lleno" : ""}</small>
+                </span>`;
+            return full
+                ? `<span class="card__com card__com--${i % 4} is-full" aria-disabled="true">${inner}</span>`
+                : `<a class="card__com card__com--${i % 4}" href="inscripcion.html?id=${encodeURIComponent(lab.id)}&comision=${encodeURIComponent(c.id)}" aria-label="Inscribirme en la comisión ${i + 1}: ${escapeHtml(c.label)}">${inner}</a>`;
         }).join("");
 
         return `
@@ -333,14 +349,8 @@ function renderCards() {
                     <button class="card__open" data-open-lab="${escapeHtml(lab.id)}" aria-haspopup="dialog">${escapeHtml(lab.titulo)}</button>
                 </h3>
                 
-                <!-- Horarios en píldoras blancas -->
-                <div class="card__times">
+                <div class="card__coms">
                     ${timesHtml}
-                </div>
-
-                <!-- Días de cursada en fichas cuadradas de calendario -->
-                <div class="card__days">
-                    ${daysHtml}
                 </div>
 
                 ${signupBtn}
@@ -352,7 +362,7 @@ function renderCards() {
     $$(".card", wrap).forEach(card => {
         const id = card.dataset.labId;
         card.addEventListener("click", (e) => {
-            if (!e.target.closest(".card__btn")) {
+            if (!e.target.closest(".card__btn, .card__com")) {
                 openPanel(id);
             }
         });

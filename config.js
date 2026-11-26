@@ -16,8 +16,6 @@ const EVENT = {
     place: "TUMO Chacarita",
     price: "Gratuito",
     contact: "familias.chacarita@tumo.ar",
-    whatsapp: "5491151342592",
-    whatsappText: "Hola, necesito más información sobre los Flash Labs de TUMO Chacarita",
     emailDomain: "@tumo.world",
     maxInscripcionesPorEstudiante: 2,
     rules: [
@@ -33,7 +31,7 @@ const EVENT = {
         ["¿Cuándo y dónde se dictan los Flash Labs?", 
          "Los Flash Labs se desarrollarán del lunes 14 al jueves 17 de diciembre de 2026 en la sede de TUMO Chacarita, Buenos Aires."],
         ["¿Quiénes pueden participar?", 
-         "Son actividades exclusivas para estudiantes activos de TUMO Chacarita que tengan al menos una disciplina en estado \"complete\" u \"on going\"."],
+         "Cualquier estudiante activo de TUMO Chacarita. Algunos Flash Labs tienen requisitos: los explicamos más abajo."],
         ["¿Me puedo anotar en más de un Flash Lab?", 
          "Sí, podés inscribirte en hasta dos (2) Flash Labs distintos, siempre que no repitas el mismo taller."],
         ["¿Qué datos me piden para inscribirme?", 
@@ -45,7 +43,7 @@ const EVENT = {
         ["¿Cómo sé si mi vacante está confirmada?", 
          "El equipo de TUMO Chacarita enviará la confirmación por correo electrónico antes del inicio del taller."],
         ["¿Cómo contacto a la sede?", 
-         "Podés escribirnos a familias.chacarita@tumo.ar o por WhatsApp al +54 9 11 5134-2592."]
+         "Podés escribirnos a familias.chacarita@tumo.ar o preguntarle a tu coach."]
     ]
 };
 
@@ -131,9 +129,6 @@ const DISCIPLINAS = {
     }
 };
 
-// Abre WhatsApp con mensaje preconfigurado
-const whatsappUrl = () => `https://wa.me/${EVENT.whatsapp}?text=${encodeURIComponent(EVENT.whatsappText)}`;
-
 // Escape HTML básico
 const escapeHtml = (text) => String(text ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -216,8 +211,6 @@ function isAlreadyInscripto(dni, labId) {
     return getLocalInscripciones().some(item => cleanDoc(item.dni) === cleanedDNI && item.labId === labId);
 }
 
-const DAY_ORDER = ["Lun 14", "Mar 15", "Mié 16", "Jue 17"];
-
 function formatHoras(horas) {
     return String(horas).replace(".", ",") + " h";
 }
@@ -240,7 +233,6 @@ function processRawLabs(rawList) {
             cupo: Number(c.cupo || item.maxParticipantes),
             label: `${c.dias.join(" y ")} · ${c.horario.replace(/ h$/, " h")}`
         }));
-        const diasDelLab = DAY_ORDER.filter(d => comisiones.some(c => c.dias.includes(d)));
         const encuentrosTexto = item.encuentros === 1 ? "1 encuentro" : `${item.encuentros} encuentros`;
 
         return {
@@ -256,8 +248,7 @@ function processRawLabs(rawList) {
             maxParticipantes: item.maxParticipantes,
             requisitos: item.requisito.texto,
             tieneRequisito: item.requisito.workshops.length > 0,
-            comisiones,
-            diasDelLab
+            comisiones
         };
     });
 }

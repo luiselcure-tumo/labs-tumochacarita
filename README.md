@@ -293,9 +293,9 @@ Estados posibles: `ok`, `error`, `busy`, `padron_no_disponible`, `dni_no_encontr
 ### `config.js`
 - Constantes de evento (`EVENT`): nombre, fechas, contacto, dominios de email permitidos, límites.
 - Metadatos de disciplinas (`DISCIPLINAS`): colores, slugs, íconos, etiquetas.
-- Helpers: `escapeHtml`, `cleanDoc`, `formatHorario`, `slugify`, `whatsappUrl`.
+- Helpers: `escapeHtml`, `cleanDoc`, `slugify`, `formatHoras`.
 - Almacenamiento local: `getLocalInscripciones`, `saveLocalInscripcion`.
-- Lógica de cupos: `getInscriptosCount`, `getInscriptosTotalCount`, `isLabAvailable`, `isHorarioAvailable`, `isAlreadyInscripto`, `getInscripcionesCountByDNI`.
+- Lógica de cupos por comisión: `getInscriptosCount`, `getComisionVacantes`, `isComisionAvailable`, `isLabAvailable`, `getLabVacantes`, `isAlreadyInscripto`, `getInscripcionesCountByDNI`.
 - Procesamiento de datos crudos: `processRawLabs`.
 
 ### `script.js`
@@ -379,7 +379,7 @@ Este proyecto es interno de TUMO Chacarita. Todos los derechos reservados.
 ## 📬 Contacto
 
 - **Email**: familias.chacarita@tumo.ar
-- **WhatsApp**: +54 9 11 5134-2592
+- **Coach**: cada estudiante puede consultar a su coach
 - **Sede**: TUMO Chacarita, Buenos Aires, Argentina
 
 ---

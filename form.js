@@ -101,7 +101,10 @@ function fillChosenDetails() {
         ? `⚠️ ${lab.requisitos}`
         : "✓ Sin requisitos previos";
 
-    selectedComision = lab.comisiones.find(c => isComisionAvailable(c, remoteCounts)) || lab.comisiones[0];
+    const requested = new URLSearchParams(location.search).get("comision");
+    selectedComision = lab.comisiones.find(c => c.id === requested)
+        || lab.comisiones.find(c => isComisionAvailable(c, remoteCounts))
+        || lab.comisiones[0];
     updateFormAvailability();
     updateComisionDisplay();
 }
