@@ -8,7 +8,9 @@ var SHEET_INSCRIPTOS = "Inscriptos";
 var PADRON_SPREADSHEET_ID = "1Ft4lkvM_cz56ruRks-nHxlU_XyL-loEQVLOM4oporaU";
 var PADRON_SHEET_COMPLETED = "WSH COMPLETED";
 var PADRON_SHEET_ONGOING = "ONGOING WSH";
-var PADRON_CACHE_KEY = "padron_v1";
+var PADRON_SHEET_ALUMNOS = "BACK";
+var PADRON_ESTADOS_ACTIVOS = ["aceptada"];
+var PADRON_CACHE_KEY = "padron_v2";
 var PADRON_CACHE_SECONDS = 600;
 var MAX_LABS_POR_ESTUDIANTE = 2;
 var DOMINIOS_CORREO = ["tumo.world", "tumo.ar"];
@@ -62,7 +64,8 @@ function loadPadron() {
   var ss = SpreadsheetApp.openById(PADRON_SPREADSHEET_ID);
   var completed = ss.getSheetByName(PADRON_SHEET_COMPLETED);
   var ongoing = ss.getSheetByName(PADRON_SHEET_ONGOING);
-  if (!completed || !ongoing) throw new Error("Padron sheets not found");
+  var alumnos = ss.getSheetByName(PADRON_SHEET_ALUMNOS);
+  if (!completed || !ongoing || !alumnos) throw new Error("Padron sheets not found");
 
   var padron = {};
   function addStudent(dni) {
@@ -73,7 +76,18 @@ function loadPadron() {
     if (dni && key && padron[dni].indexOf(key) === -1) padron[dni].push(key);
   }
 
-  var rows = completed.getDataRange().getValues();
+  // Active students with no workshop record yet only appear in the admissions sheet.
+  var rows = alumnos.getDataRange().getValues();
+  var iDoc = columnIndex(rows[0], "N° de Documento");
+  var iEstado = columnIndex(rows[0], "Estado");
+  if (iDoc < 0 || iEstado < 0) throw new Error("Unexpected columns in " + PADRON_SHEET_ALUMNOS);
+  for (var a = 1; a < rows.length; a++) {
+    if (PADRON_ESTADOS_ACTIVOS.indexOf(String(rows[a][iEstado]).trim().toLowerCase()) !== -1) {
+      addStudent(normalizeDni(rows[a][iDoc]));
+    }
+  }
+
+  rows = completed.getDataRange().getValues();
   var iDni = columnIndex(rows[0], "DNI");
   var iWorkshop = columnIndex(rows[0], "Workshop");
   var iPass = columnIndex(rows[0], "PassStatus");
@@ -208,7 +222,7 @@ function registrarInscripcion(params) {
 
     var completados = padron[dni];
     if (!completados) {
-      return jsonResponse({ status: "dni_no_encontrado", message: "No encontramos tu DNI en el padrón de TUMO Chacarita. Verificá que esté escrito sin puntos ni espacios." });
+      return jsonResponse({ status: "dni_no_encontrado", message: "No encontramos tu DNI entre los estudiantes activos de TUMO Chacarita. Verificá que esté escrito sin puntos ni espacios." });
     }
 
     var requisitos = comision.requisitos || [];

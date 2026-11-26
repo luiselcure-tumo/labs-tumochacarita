@@ -33,6 +33,13 @@ const ONGOING = [
   ["5", "40555555", "Photography II", "Prerequisite", "Completed 2026-05-01"],
 ];
 
+const ALUMNOS = [
+  ["ID Tumo360", "Tipo de Documento", "N° de Documento", "Estado"],
+  ["7", "DNI", "40777777", "Aceptada"],
+  ["8", "DNI", "40888888", "Baja"],
+  ["1", "DNI", "40111111", "Aceptada"],
+];
+
 function setup({ inscriptos = [], padronAvailable = true } = {}) {
   const sheet = makeSheet(inscriptos.map((r) => [...r]));
   const ctx = {
@@ -44,7 +51,7 @@ function setup({ inscriptos = [], padronAvailable = true } = {}) {
       }),
       openById: () => {
         if (!padronAvailable) throw new Error("no access");
-        const tabs = { "WSH COMPLETED": makeSheet(COMPLETED), "ONGOING WSH": makeSheet(ONGOING) };
+        const tabs = { "WSH COMPLETED": makeSheet(COMPLETED), "ONGOING WSH": makeSheet(ONGOING), BACK: makeSheet(ALUMNOS) };
         return { getSheetByName: (n) => tabs[n] || null };
       },
     },
@@ -100,6 +107,24 @@ test("should keep a student in the padron when their only completed-sheet row di
   // Assert
   assert.equal(sinRequisito.status, "ok");
   assert.equal(conRequisito.status, "requisito_no_cumplido");
+});
+
+test("should report the missing requirement when an accepted student has no workshop record", () => {
+  // Arrange
+  const { post } = setup();
+
+  // Act
+  const sinRequisito = post({ ...base, dni: "40777777", comisionId: LETTERING });
+  const conRequisito = post({ ...base, dni: "40777777", comisionId: FOTO });
+
+  // Assert
+  assert.equal(sinRequisito.status, "ok");
+  assert.equal(conRequisito.status, "requisito_no_cumplido");
+});
+
+test("should reject when the student is only in the admissions sheet with an inactive estado", () => {
+  const { post } = setup();
+  assert.equal(post({ ...base, dni: "40888888", comisionId: LETTERING }).status, "dni_no_encontrado");
 });
 
 test("should reject when the student lacks the required level I", () => {
