@@ -105,7 +105,7 @@ webLabs_2026/
 ├── theme.js                # Conmutador de tema claro/verde con View Transitions API
 ├── appScript.js            # Google Apps Script (backend opcional para Google Sheets)
 ├── style.css               # Estilos globales, identidad visual, temas, animaciones CSS
-├── data_de_labs.js         # Datos de los 23 talleres embebidos en window.RAW_DATA_DE_LABS
+├── data_de_labs.js         # Datos de los 22 talleres embebidos en window.RAW_DATA_DE_LABS
 ├── data_de_labs.json       # Mismo contenido en formato JSON (para consumo externo o migración)
 ├── assets/
 │   ├── Chacarita_Logo_Light.png
@@ -130,7 +130,7 @@ webLabs_2026/
 | **Lógica** | JavaScript ES6+ (Vanilla) | Interactividad, validaciones, renderizado dinámico |
 | **Backend (opcional)** | Google Apps Script | API de inscripción y conteo de cupos vinculada a Google Sheets |
 | **Almacenamiento local** | `localStorage` | Persistencia de inscripciones sin backend configurado |
-| **Tipografía** | Google Fonts: Archivo, Caveat | Tipografía oficial del proyecto |
+| **Tipografía** | Google Fonts: Archivo | Tipografía oficial del proyecto |
 | **Despliegue** | Estático (Vercel, Netlify, GitHub Pages, etc.) | Sitio estático sin servidor propio |
 
 ---
@@ -140,7 +140,7 @@ webLabs_2026/
 ### 1. Navegación en la Cartelera (`index.html`)
 
 1. El usuario accede a `index.html`.
-2. Se carga `data_de_labs.js` → `window.RAW_DATA_DE_LABS` con los 23 talleres.
+2. Se carga `data_de_labs.js` → `window.RAW_DATA_DE_LABS` con los 22 talleres.
 3. `script.js` procesa los datos (`processRawLabs`) y renderiza:
    - Filtros por disciplina.
    - Tarjetas de taller con animación flat-design, estado de disponibilidad y botón de inscripción.

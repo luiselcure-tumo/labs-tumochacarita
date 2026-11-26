@@ -31,7 +31,6 @@
 
     /* Tipografía según especificaciones */
     --font: "Maax", "Fredra", "Archivo", system-ui, -apple-system, sans-serif;
-    --font-hand: "Caveat", cursive;
 
     /* Dimensiones y bordes */
     --radius: 999px;
@@ -72,20 +71,23 @@ h3 { font-size: 1.25rem; font-weight: 800; }
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-/* Tipografía manuscrita lúdica */
-.hand {
-    font-family: var(--font-hand);
-    font-weight: 700;
-    color: var(--green-primary);
-    font-size: 1.15em;
+/* Marker-style underline drawn under a highlighted word */
+.mark-stroke {
+    position: relative;
+    z-index: 0;
     display: inline-block;
-    transform: rotate(-6deg) translateY(0.04em);
+    white-space: nowrap;
 }
-.hand--dark { color: var(--green-dark); 
-                
+.mark-stroke::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -0.06em;
+    right: -0.06em;
+    bottom: -0.16em;
+    height: 0.34em;
+    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 24' preserveAspectRatio='none'%3E%3Cpath d='M4 15 C 45 7, 95 6, 135 9 S 182 12, 196 8' fill='none' stroke='%235EB656' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
 }
-.hand--secondary { color: var(--green-secondary); }
-.nowrap { white-space: nowrap; }
 
 /* ---------- Botones ---------- */
 .btn {
@@ -367,9 +369,10 @@ h3 { font-size: 1.25rem; font-weight: 800; }
 }
 
 .filters-wrapper {
-    margin-bottom: 2.5rem;
+    margin: -0.4rem 0 2.1rem;
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    /* overflow-x clips vertically too: room for the hover lift and shadows */
+    padding: 0.4rem 0.5rem 0.6rem;
     -webkit-overflow-scrolling: touch;
 }
 .filters {

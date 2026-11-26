@@ -335,8 +335,8 @@ var CATALOGO = {
     "requisitoTexto": "Sin requisitos previos"
   },
   "pelea-de-verano-i-1": {
-    "labId": "pelea-de-verano-i",
-    "taller": "Pelea de verano I",
+    "labId": "pelea-de-verano",
+    "taller": "Pelea de verano",
     "disciplina": "Videojuegos",
     "dias": "Lun 14 y Jue 17",
     "horario": "9 a 11 h",
@@ -346,21 +346,9 @@ var CATALOGO = {
     ],
     "requisitoTexto": "Videojuegos I completado"
   },
-  "pelea-de-verano-i-2": {
-    "labId": "pelea-de-verano-i",
-    "taller": "Pelea de verano I",
-    "disciplina": "Videojuegos",
-    "dias": "Lun 14 y Mié 16",
-    "horario": "17 a 19 h",
-    "cupo": 18,
-    "requisitos": [
-      "game_development"
-    ],
-    "requisitoTexto": "Videojuegos I completado"
-  },
   "pelea-de-verano-ii-1": {
-    "labId": "pelea-de-verano-ii",
-    "taller": "Pelea de verano II",
+    "labId": "pelea-de-verano",
+    "taller": "Pelea de verano",
     "disciplina": "Videojuegos",
     "dias": "Mar 15 y Mié 16",
     "horario": "9 a 11 h",
@@ -370,9 +358,21 @@ var CATALOGO = {
     ],
     "requisitoTexto": "Videojuegos I completado"
   },
+  "pelea-de-verano-i-2": {
+    "labId": "pelea-de-verano",
+    "taller": "Pelea de verano",
+    "disciplina": "Videojuegos",
+    "dias": "Lun 14 y Mié 16",
+    "horario": "17 a 19 h",
+    "cupo": 18,
+    "requisitos": [
+      "game_development"
+    ],
+    "requisitoTexto": "Videojuegos I completado"
+  },
   "pelea-de-verano-ii-2": {
-    "labId": "pelea-de-verano-ii",
-    "taller": "Pelea de verano II",
+    "labId": "pelea-de-verano",
+    "taller": "Pelea de verano",
     "disciplina": "Videojuegos",
     "dias": "Mar 15 y Jue 17",
     "horario": "17 a 19 h",

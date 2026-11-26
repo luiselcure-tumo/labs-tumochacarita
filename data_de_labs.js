@@ -454,8 +454,8 @@ window.RAW_DATA_DE_LABS = [
     ]
   },
   {
-    "id": "pelea-de-verano-i",
-    "titulo": "Pelea de verano I",
+    "id": "pelea-de-verano",
+    "titulo": "Pelea de verano",
     "disciplina": "Videojuegos",
     "descripcion": "La idea es que los tumonians aprendan a diseñar espacios pensados para el combate, aplicando la teoría de diseño de niveles del nivel 1 en una sala con enemigos controlados por IA.\nLa idea es crear estos escenarios con estetica de guerra de agua, los personajes se dispararian con pistalas de agua, bombuchas y usarian flotaflota como armas, mantenemos los mismos conceptos para ensenar pero con estetica mas amistosa para las visuales",
     "encuentros": 2,
@@ -478,38 +478,20 @@ window.RAW_DATA_DE_LABS = [
         "horario": "9 a 11 h"
       },
       {
-        "id": "pelea-de-verano-i-2",
-        "dias": [
-          "Lun 14",
-          "Mié 16"
-        ],
-        "horario": "17 a 19 h"
-      }
-    ]
-  },
-  {
-    "id": "pelea-de-verano-ii",
-    "titulo": "Pelea de verano II",
-    "disciplina": "Videojuegos",
-    "descripcion": "La idea es que los tumonians aprendan a diseñar espacios pensados para el combate, aplicando la teoría de diseño de niveles del nivel 1 en una sala con enemigos controlados por IA.\nLa idea es crear estos escenarios con estetica de guerra de agua, los personajes se dispararian con pistalas de agua, bombuchas y usarian flotaflota como armas, mantenemos los mismos conceptos para ensenar pero con estetica mas amistosa para las visuales",
-    "encuentros": 2,
-    "horasTotales": 4,
-    "minParticipantes": 1,
-    "maxParticipantes": 18,
-    "requisito": {
-      "texto": "Videojuegos I completado",
-      "workshops": [
-        "game_development"
-      ]
-    },
-    "comisiones": [
-      {
         "id": "pelea-de-verano-ii-1",
         "dias": [
           "Mar 15",
           "Mié 16"
         ],
         "horario": "9 a 11 h"
+      },
+      {
+        "id": "pelea-de-verano-i-2",
+        "dias": [
+          "Lun 14",
+          "Mié 16"
+        ],
+        "horario": "17 a 19 h"
       },
       {
         "id": "pelea-de-verano-ii-2",
